@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-roadwatch}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-roadwatch}
+      POSTGRES_DB: ${POSTGRES_DB:-roadwatch}
+    # 호스트 포트는 15432. 5432·5433은 다른 프로젝트와 충돌할 수 있어 피한다.
+    # 컨테이너 사이 통신(api → db)은 여전히 5432를 쓴다.
+    ports: ["${DB_HOST_PORT:-15432}:5432"]
+    volumes:
+      # 최초 기동 시 스키마와 시드가 자동 적재된다
+      - ./backend/db:/docker-entrypoint-initdb.d:ro
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-roadwatch}"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-roadwatch}:${POSTGRES_PASSWORD:-roadwatch}@db:5432/${POSTGRES_DB:-roadwatch}
+      DATA_DIR: /data
+    ports: ["8000:8000"]
+    volumes:
+      - ./data:/data:ro
+      - ./backend:/srv
+    depends_on:
+      db: { condition: service_healthy }
+
+  web:
+    build: ./frontend
+    environment:
+      VITE_API_BASE: ${VITE_API_BASE:-http://localhost:8000}
+      VITE_VWORLD_KEY: ${VITE_VWORLD_KEY:-}
+    ports: ["5173:5173"]
+    volumes:
+      - ./frontend:/srv
+      - /srv/node_modules
+    depends_on: [api]
+
+volumes:
+  pgdata:
