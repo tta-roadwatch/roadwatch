@@ -1,0 +1,122 @@
+-- ─────────────────────────────────────────────────────────────
+-- RoadWatch — 자율주행 취약도로 탐지 서비스
+-- 스키마는 TTAK.KO-10.1331-Part4/R1(스마트시티 데이터허브 데이터 모델)의
+-- NGSI-LD 정규 표현법과 TrafficEvent 모델 구조를 관계형으로 옮긴 것이다.
+-- ─────────────────────────────────────────────────────────────
+
+-- 주행 세션 : 실제 수집일 하나 = 세션 하나.
+-- 한 세션에 여러 데이터셋 파일이 딸리므로 파일은 session_files로 분리한다.
+CREATE TABLE sessions (
+    id                TEXT PRIMARY KEY,          -- 실제 수집일 (2022-05-16)
+    actual_start      TIMESTAMPTZ,               -- ss_num(epoch) 또는 colct_dt에서 복원
+    actual_end        TIMESTAMPTZ,
+    has_ss_num        BOOLEAN NOT NULL DEFAULT FALSE,
+    label_date        DATE,                      -- 파일 colct_dt 라벨의 날짜
+    label_mismatch    BOOLEAN NOT NULL DEFAULT FALSE,  -- 라벨 연도 ≠ 실제 연도
+    available_metrics TEXT[] NOT NULL DEFAULT '{}',    -- 산출 가능한 이벤트 종류
+    codebook          TEXT,                      -- 적용한 코드북 (standard | inverted)
+    ingested_at       TIMESTAMPTZ DEFAULT now()
+);
+
+-- 세션을 구성하는 원본 파일
+CREATE TABLE session_files (
+    id            BIGSERIAL PRIMARY KEY,
+    session_id    TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+    dataset_kind  TEXT NOT NULL,   -- BSM | GPS | STATUS | OBJECT | CONTROL
+    source_file   TEXT NOT NULL UNIQUE,
+    record_count  INTEGER NOT NULL DEFAULT 0,
+    expected_count INTEGER,        -- 계획 §2.1 표의 값. 불일치 시 경고
+    label_date    DATE,
+    actual_start  TIMESTAMPTZ,
+    actual_end    TIMESTAMPTZ,
+    has_ss_num    BOOLEAN NOT NULL DEFAULT FALSE,
+    loaded_to_db  BOOLEAN NOT NULL DEFAULT FALSE   -- 좌표 보유(BSM·GPS)만 true
+);
+CREATE INDEX ON session_files (session_id);
+
+-- 정규화된 주행 레코드 (좌표를 가진 BSM·GPS만 적재)
+CREATE TABLE driving_records (
+    id            BIGSERIAL PRIMARY KEY,
+    session_id    TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+    dataset_kind  TEXT NOT NULL,
+    vehicle_id    TEXT,                          -- 세션별 타입 상이 → 문자열로 통일
+    observed_at   TIMESTAMPTZ,                   -- NGSI-LD observedAt
+    obs_second    BIGINT,                        -- epoch 초 (격자 집계의 관측 단위)
+    lat           DOUBLE PRECISION,
+    lon           DOUBLE PRECISION,
+    speed         DOUBLE PRECISION,
+    steering      DOUBLE PRECISION,
+    accel_lng     DOUBLE PRECISION,
+    -- 코드북 적용 후 boolean (원본 코드체계는 세션마다 반대일 수 있다)
+    f_manual_emg  BOOLEAN,
+    f_auto_emg    BOOLEAN,
+    f_sensor_trb  BOOLEAN,
+    f_state_abn   BOOLEAN,
+    autonomy_raw  SMALLINT,                      -- autonm_flg 원본값 (의미 미확정)
+    valid_coord   BOOLEAN NOT NULL DEFAULT TRUE
+);
+CREATE INDEX ON driving_records (session_id);
+CREATE INDEX ON driving_records (session_id, obs_second);
+CREATE INDEX ON driving_records (lat, lon) WHERE valid_coord;
+
+-- 품질검증 결과
+CREATE TABLE quality_checks (
+    id          BIGSERIAL PRIMARY KEY,
+    session_id  TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+    check_name  TEXT NOT NULL,     -- required_fields | coord_range | label_consistency
+                                   -- constant_fields | metric_availability
+    status      TEXT NOT NULL,     -- pass | warn | excluded
+    detail      JSONB NOT NULL DEFAULT '{}'::jsonb
+);
+CREATE INDEX ON quality_checks (session_id);
+
+-- 40m 격자 : ITS 전국표준노드링크로 도로 속성을 채운다
+CREATE TABLE grid_cells (
+    cell_key    TEXT PRIMARY KEY,          -- "iy:ix" 정수 인덱스
+    center_lat  DOUBLE PRECISION NOT NULL,
+    center_lon  DOUBLE PRECISION NOT NULL,
+    road_name   TEXT,                      -- TrafficEvent.name
+    address     TEXT,                      -- TrafficEvent.address
+    link_id     TEXT,
+    lanes       SMALLINT,
+    max_speed   SMALLINT,
+    link_dist_m DOUBLE PRECISION           -- 최근접 링크까지 거리 (50m 초과면 도로망 밖)
+);
+
+-- 세션 × 격자 관측 : TTAK.KO-10.1331-Part4/R1 7.2.1 VehicleTraffic
+CREATE TABLE cell_observations (
+    id                BIGSERIAL PRIMARY KEY,
+    cell_key          TEXT NOT NULL REFERENCES grid_cells(cell_key) ON DELETE CASCADE,
+    session_id        TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+    observation_count INTEGER NOT NULL,    -- 관측 단위(초) 수
+    event_count       INTEGER NOT NULL,    -- 중복 제거된 이벤트 관측 수
+    event_rate        DOUBLE PRECISION NOT NULL,
+    event_types       JSONB NOT NULL DEFAULT '{}'::jsonb,
+    measurable        BOOLEAN NOT NULL DEFAULT TRUE,  -- 측정 불가 ≠ 이벤트 0%
+    UNIQUE (cell_key, session_id)
+);
+
+-- 반복성 판정 결과 : 3단계 분류
+CREATE TABLE road_issues (
+    cell_key       TEXT PRIMARY KEY REFERENCES grid_cells(cell_key) ON DELETE CASCADE,
+    classification TEXT NOT NULL,          -- always_manual | intermittent | low
+    session_count  SMALLINT NOT NULL,      -- 반복 검출된 세션 수
+    min_event_rate DOUBLE PRECISION,
+    max_event_rate DOUBLE PRECISION,
+    is_candidate   BOOLEAN NOT NULL DEFAULT FALSE,
+    decided_at     TIMESTAMPTZ DEFAULT now()
+);
+
+-- 현장점검 : 시스템 판정을 사람이 확정·번복하는 지점
+CREATE TABLE inspections (
+    id           BIGSERIAL PRIMARY KEY,
+    cell_key     TEXT NOT NULL REFERENCES grid_cells(cell_key) ON DELETE CASCADE,
+    status       TEXT NOT NULL DEFAULT 'recommended',  -- recommended | inspecting | resolved | not_applicable
+    findings     TEXT[] NOT NULL DEFAULT '{}',         -- 차선 마모 · 표지판 가림 · 상시 수동 운행 구간 …
+    action       TEXT,
+    inspector    TEXT,
+    inspected_at TIMESTAMPTZ,
+    created_at   TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX ON inspections (cell_key);
+CREATE INDEX ON inspections (status);
