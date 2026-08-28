@@ -1,0 +1,385 @@
+{
+ "BSM": {
+  "data_sn": 17,
+  "fields": [
+   {
+    "field": "colct_dt",
+    "ko": "수집 일시",
+    "type": "VARCHAR(30)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "msg_cnt",
+    "ko": "메시지 수",
+    "type": "NUMERIC(20)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "vhcl_id",
+    "ko": "차량 ID",
+    "type": "VARCHAR(30)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "la",
+    "ko": "위도",
+    "type": "NUMERIC(13.10)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "lo",
+    "ko": "경도",
+    "type": "NUMERIC(13.10)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "elvt",
+    "ko": "고도",
+    "type": "VARCHAR(30)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "gps_acc_major",
+    "ko": "GPS 정확도 메이저",
+    "type": "VARCHAR(1000)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "gps_acc_minor",
+    "ko": "GPS 정확도 마이너",
+    "type": "VARCHAR(1000)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "ve",
+    "ko": "속도",
+    "type": "VARCHAR(50)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "vhcl_heading",
+    "ko": "차량 방향",
+    "type": "VARCHAR(1000)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "strwhl_angl",
+    "ko": "회전 각도",
+    "type": "VARCHAR(100)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "lng_acclset",
+    "ko": "종 가속도",
+    "type": "VARCHAR(100)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "lat_acclset",
+    "ko": "횡 가속도",
+    "type": "VARCHAR(100)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "vrt_acclset",
+    "ko": "수직 가속도",
+    "type": "VARCHAR(100)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "yaw_acclset",
+    "ko": "요 가속도",
+    "type": "VARCHAR(100)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "secmark",
+    "ko": "초수",
+    "type": "VARCHAR(50)",
+    "null": "Null 허용"
+   },
+   {
+    "field": "light_set_cd",
+    "ko": "조명 작동 코드",
+    "type": "CHAR(3)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "vhcl_width",
+    "ko": "차량 너비",
+    "type": "NUMERIC(20)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "mnl_emg_flg",
+    "ko": "수동 비상정지 플래그",
+    "type": "CHAR(3)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "auto_emg_flg",
+    "ko": "자동화 비상정지 플래그",
+    "type": "CHAR(3)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "snsr_trb_flg",
+    "ko": "센서 장애 플래그",
+    "type": "CHAR(3)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "vhcl_sttus_flg",
+    "ko": "차량 상태 플래그",
+    "type": "CHAR(3)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "car_typ",
+    "ko": "자동차 구분",
+    "type": "VARCHAR(2)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "autonm_flg",
+    "ko": "자율주행 플래그",
+    "type": "CHAR(3)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "vhcl_lnth",
+    "ko": "차량 길이",
+    "type": "NUMERIC(20,5)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "update_tm",
+    "ko": "수정 시간",
+    "type": "VARCHAR(5000)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "brk_abs_cd",
+    "ko": "브레이크 ABS 코드",
+    "type": "CHAR(3)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "brk_traction_cd",
+    "ko": "브레이크 트랙션 코드",
+    "type": "VARCHAR(50)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "brk_whl_set_cd",
+    "ko": "브레이크 휠 작동 코드",
+    "type": "VARCHAR(30)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "gps_acc_orientation",
+    "ko": "GPS 정확도 방향",
+    "type": "VARCHAR(100)",
+    "null": "Null 비허용"
+   }
+  ],
+  "count": 30
+ },
+ "GPS_INS": {
+  "data_sn": 18,
+  "fields": [
+   {
+    "field": "colct_dt",
+    "ko": "수집 일시",
+    "type": "VARCHAR(30)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "la",
+    "ko": "위도",
+    "type": "NUMERIC(13.10)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "lo",
+    "ko": "경도",
+    "type": "NUMERIC(13.10)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "elvt",
+    "ko": "고도",
+    "type": "VARCHAR(30)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "lctn_covar_cont",
+    "ko": "위치 공분산 내용",
+    "type": "VARCHAR(200)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "lctn_covar_typ_cd",
+    "ko": "위치 공분산 유형 코드",
+    "type": "VARCHAR(10)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "hdr_sn",
+    "ko": "hdr센서 순번",
+    "type": "VARCHAR(30)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "ss_num",
+    "ko": "초 수",
+    "type": "CHAR(30)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "nano_ss_num",
+    "ko": "나노 초 수",
+    "type": "CHAR(30)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "src_cont",
+    "ko": "원천 내용",
+    "type": "VARCHAR(400)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "gps_sttus_cd",
+    "ko": "GPS 상태 코드",
+    "type": "VARCHAR(9)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "gps_srvc_dvsn_cd",
+    "ko": "GPS 서비스 구분 코드",
+    "type": "VARCHAR(50)",
+    "null": "Null 비허용"
+   }
+  ],
+  "count": 12
+ },
+ "OBJECT": {
+  "data_sn": 19,
+  "fields": [],
+  "count": 0
+ },
+ "VEHICLE_STATUS": {
+  "data_sn": 20,
+  "fields": [
+   {
+    "field": "colct_dt",
+    "ko": "수집 일시",
+    "type": "VARCHAR(30)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "hdr_sn",
+    "ko": "hdr센서 순번",
+    "type": "VARCHAR(30)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "ss_num",
+    "ko": "초 수",
+    "type": "CHAR(30)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "nano_ss_num",
+    "ko": "나노 초 수",
+    "type": "CHAR(30)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "stop_yn",
+    "ko": "멈춤 여부",
+    "type": "CHAR(1)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "gear_num",
+    "ko": "기어 수",
+    "type": "CHAR(30)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "ve",
+    "ko": "속도",
+    "type": "VARCHAR(50)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "wheel_angl_grd_vl",
+    "ko": "휠 각도 등급 값",
+    "type": "NUMERIC(10,3)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "goal_gear_num",
+    "ko": "목표 기어 수",
+    "type": "CHAR(30)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "goal_ve",
+    "ko": "목표 속도",
+    "type": "VARCHAR(50)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "goal_limit_ve",
+    "ko": "목표 한계 속도",
+    "type": "VARCHAR(50)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "goal_wheel_angl_grd_vl",
+    "ko": "목표 휠 각도 등급 값",
+    "type": "NUMERIC(10,3)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "auto_sttus",
+    "ko": "자동화 상태",
+    "type": "VARCHAR(100)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "ster_sttus",
+    "ko": "조종 상태",
+    "type": "VARCHAR(100)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "ve_sttus",
+    "ko": "속도 상태",
+    "type": "VARCHAR(100)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "strt_stop_yn",
+    "ko": "개시 멈춤 여부",
+    "type": "VARCHAR(20)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "left_rott_req_yn",
+    "ko": "좌 회전 소요 여부",
+    "type": "VARCHAR(20)",
+    "null": "Null 비허용"
+   },
+   {
+    "field": "rght_rott_req_yn",
+    "ko": "우 회전 소요 여부",
+    "type": "VARCHAR(20)",
+    "null": "Null 비허용"
+   }
+  ],
+  "count": 18
+ }
+}
