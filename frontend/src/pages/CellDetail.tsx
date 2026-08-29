@@ -74,6 +74,12 @@ export function CellDetail() {
               지도에서 보기
             </Link>
             <Link
+              to={`/cells/${encodeURIComponent(cell.cell_key)}/comparison`}
+              className="rw-btn rw-btn--secondary"
+            >
+              개선 전·후 비교
+            </Link>
+            <Link
               to={`/inspections?cell=${encodeURIComponent(cell.cell_key)}`}
               className="rw-btn rw-btn--primary"
             >

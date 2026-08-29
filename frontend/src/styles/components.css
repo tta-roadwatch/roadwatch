@@ -942,3 +942,9 @@
   padding: 0;
   margin-bottom: var(--rw-space-2);
 }
+
+/* 시뮬레이션 카드는 테두리로도 실측과 구분되게 한다 */
+.rw-figure--sim {
+  border-color: var(--rw-sim-border);
+  background: var(--rw-sim-weak);
+}
