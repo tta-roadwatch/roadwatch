@@ -14,7 +14,7 @@ from pathlib import Path
 
 import psycopg
 
-from . import db, grid, ingest, nodelink, quality, repeat
+from . import db, demo_layers, grid, ingest, nodelink, quality, repeat
 from .codebook import VERIFIED
 
 STEPS = {
@@ -23,6 +23,7 @@ STEPS = {
     "grid": ("⑥ 격자집계", grid.run),
     "repeat": ("⑦ 반복성판정", repeat.run),
     "nodelink": ("⑧ 도로명매핑", nodelink.run),
+    "demo": ("⑨ 시연 레이어", demo_layers.run),
 }
 
 
@@ -102,6 +103,13 @@ def checks(conn: psycopg.Connection) -> list[tuple[str, str, object, object]]:
             "select count(*) from grid_cells where link_id is not null"), 89))
         out.append(("2차", "도로명 있는 셀", _one(cur,
             "select count(*) from grid_cells where road_name is not null"), 76))
+        # ⑨ 시연 레이어 — 지도에 찍히는 수는 좌표 유효분만이라 15,588 과 다르다
+        out.append(("2차", "정규화전 지도표시", _one(cur,
+            "select count(*) from normalization_points where raw_emergency"), 15_124))
+        out.append(("2차", "정규화후 지도표시", _one(cur,
+            "select count(*) from normalization_points where normalized_emergency"), 3))
+        out.append(("2차", "궤적 점", _one(cur,
+            "select count(*) from trajectories"), 2_945))
     return out
 
 
@@ -137,6 +145,8 @@ SEED_TABLES = (
     ("cell_observations", "id"),
     ("road_issues", "cell_key"),
     ("inspections", "id"),
+    ("normalization_points", "id"),
+    ("trajectories", "id"),
 )
 SAMPLE_PER_SESSION = 1_000
 

@@ -136,3 +136,35 @@ CREATE TABLE users (
     last_login_at TIMESTAMPTZ
 );
 CREATE INDEX ON users (username);
+
+-- 정규화 대비 지점 — 데모 하이라이트(SCR-03)를 지도에 얹기 위한 표.
+-- 같은 BSM 레코드를 두 가지로 판정한 결과를 좌표와 함께 담는다.
+--   raw_emergency        표준 체계를 전 세션에 그대로 적용 (정규화 안 함)
+--   normalized_emergency 세션별 코드북 적용 (정규화)
+-- 전자는 15,588건, 후자는 3건이다. 화면 토글이 이 차이를 지도로 보여준다.
+CREATE TABLE normalization_points (
+    id          BIGSERIAL PRIMARY KEY,
+    session_id  TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+    observed_at TIMESTAMPTZ,
+    lat         DOUBLE PRECISION NOT NULL,
+    lon         DOUBLE PRECISION NOT NULL,
+    codebook    TEXT NOT NULL,
+    raw_emergency        BOOLEAN NOT NULL,
+    normalized_emergency BOOLEAN NOT NULL,
+    flags       TEXT[] NOT NULL DEFAULT '{}'   -- 어떤 플래그가 걸렸는지
+);
+CREATE INDEX ON normalization_points (session_id);
+CREATE INDEX ON normalization_points (raw_emergency, normalized_emergency);
+
+-- 주행 궤적 — 초당 대표 위치. 격자가 아니라 실제로 지나간 경로를 그린다.
+-- GPS는 100Hz라 전량은 과하고, 초당 1점이면 지도에서 충분히 매끄럽다.
+CREATE TABLE trajectories (
+    id          BIGSERIAL PRIMARY KEY,
+    session_id  TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+    obs_second  BIGINT NOT NULL,
+    observed_at TIMESTAMPTZ,
+    lat         DOUBLE PRECISION NOT NULL,
+    lon         DOUBLE PRECISION NOT NULL,
+    UNIQUE (session_id, obs_second)
+);
+CREATE INDEX ON trajectories (session_id, obs_second);

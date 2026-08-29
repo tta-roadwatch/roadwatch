@@ -554,3 +554,68 @@ def test_family_grouping_is_shared_not_duplicated():
         {"observation_count": 1, "measurable": True, "available_metrics": ["low_speed"]},
     ])
     assert list(grouped) == [families.JOINED, families.BSM]
+
+
+# ── 시연 레이어 (SCR-03 · SCR-05) ─────────────────────────────────────
+
+def test_normalization_toggle_collapses_map(client):
+    """데모 하이라이트 — 토글 하나로 지도가 뒤덮였다가 3개만 남는다.
+
+    숫자 15,585 가 바뀌는 것보다 지도가 비워지는 장면이 같은 사실을 훨씬
+    강하게 전달한다. 그 장면이 실제로 성립하는지 고정한다.
+    """
+    before = client.get("/api/geo/normalization").json()
+    after = client.get("/api/geo/normalization",
+                       params={"normalized": True}).json()
+
+    assert len(before["features"]) == 15_124
+    assert len(after["features"]) == 3
+    assert len(before["features"]) > len(after["features"]) * 1000
+
+    # 남은 3건은 실제 센서 이상이다 — 정규화가 진짜를 지우지 않았다는 근거
+    for f in after["features"]:
+        assert f["properties"]["flags"] == ["snsr_trb_flg"]
+
+
+def test_normalization_map_does_not_overclaim(client):
+    """지도에 찍히는 수(15,124)와 실측 오판 수(15,588)가 다르다.
+
+    차이 464 는 좌표가 유효하지 않은 BSM 레코드다. 화면이 '15,588개 마커'라고
+    말하면 과장이므로, 응답이 두 수를 모두 싣고 차이를 설명해야 한다.
+    """
+    m = client.get("/api/geo/normalization").json()["metadata"]
+    assert m["misjudged_total"] == 15_588
+    assert m["mapped_raw"] == 15_124
+    assert m["not_mappable"] == 464
+    assert m["misjudged_total"] - m["mapped_raw"] == m["not_mappable"]
+    assert "표시할 수 없어" in m["coverage_note"]
+
+
+def test_trajectories_are_drawable_lines(client):
+    """격자 사각형이 아니라 실제로 지나간 경로."""
+    gj = client.get("/api/geo/trajectories").json()
+    assert gj["features"], "궤적이 있어야 한다"
+    for f in gj["features"]:
+        assert f["geometry"]["type"] == "LineString"
+        pts = f["geometry"]["coordinates"]
+        assert len(pts) > 1, "선을 그리려면 점이 둘 이상이어야 한다"
+        for lon, lat in pts:
+            assert 126.9 < lon < 127.3 and 37.3 < lat < 37.5
+
+    one = client.get("/api/geo/trajectories",
+                     params={"session_id": "2022-05-16"}).json()
+    assert len(one["features"]) == 1
+
+
+def test_trajectory_covers_target_cell(client):
+    """대표 구간 21:4 위를 실제로 지나가야 셀이 허공에 뜬 게 아님이 보인다."""
+    cell = client.get("/api/geo/cells").json()
+    box = next(f for f in cell["features"] if f["properties"]["cell_key"] == "21:4")
+    ring = box["geometry"]["coordinates"][0]
+    (w, s), (e, n) = ring[0], ring[2]
+
+    traj = client.get("/api/geo/trajectories",
+                      params={"session_id": "2022-05-16"}).json()
+    pts = traj["features"][0]["geometry"]["coordinates"]
+    inside = [p for p in pts if w <= p[0] <= e and s <= p[1] <= n]
+    assert inside, "05-16 주행이 21:4 셀을 지나가야 한다"

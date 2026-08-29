@@ -22,6 +22,7 @@ from fastapi import APIRouter, Query
 
 from ..deps import cursor
 from pipeline import sources as S
+from pipeline.codebook import VERIFIED
 from pipeline.grid import DLAT, DLON, LAT0, LON0
 
 router = APIRouter(prefix="/api/geo", tags=["지도"])
@@ -151,3 +152,94 @@ def bounds():
 
 def _r(v):
     return round(v, 4) if isinstance(v, (int, float)) else v
+
+
+# ── 정규화 대비 (SCR-03 데모 하이라이트) ──────────────────────────────
+#: 정규화 없이 판정했을 때의 오판 건수. 실측값이며 codebook.VERIFIED 와 같은 출처다.
+MISJUDGED_TOTAL = VERIFIED["emergency_without_codebook"]
+
+@router.get("/normalization", summary="정규화 전·후 비상정지 지점 (GeoJSON)")
+def normalization_points(normalized: bool = Query(
+        False, description="false=정규화 안 함(지도가 뒤덮임), true=정규화 적용")):
+    """토글 하나로 판정이 뒤집히는 장면을 지도로 보여준다.
+
+    같은 BSM 레코드를 두 번 판정한 결과다. 정규화하지 않으면 표준 체계(1=발생)를
+    전 세션에 그대로 적용하게 되는데, 2022-10-03 세션은 1이 '정상'이라 그 세션
+    전체가 비상정지로 뒤집힌다.
+    """
+    col = "normalized_emergency" if normalized else "raw_emergency"
+    with cursor() as cur:
+        cur.execute(
+            f"""select session_id, lat, lon, observed_at, codebook, flags
+                from normalization_points where {col}
+                order by session_id, observed_at""")
+        rows = cur.fetchall()
+        cur.execute("""
+            select count(*) filter (where raw_emergency)        as raw,
+                   count(*) filter (where normalized_emergency) as norm
+            from normalization_points""")
+        c = cur.fetchone()
+    # driving_records 에서 세지 않는다. 시드 DB 는 세션당 1,000건 샘플만 담고
+    # 있어서 0 이 나오고, 그러면 시연 화면에 "0건은 좌표가 없어서"라는 틀린
+    # 문장이 뜬다. 두 수의 차이로 구하면 DB 상태와 무관하게 항상 맞다.
+    no_coord = MISJUDGED_TOTAL - c["raw"]
+
+    return {
+        "type": "FeatureCollection",
+        "features": [
+            {"type": "Feature",
+             "geometry": {"type": "Point", "coordinates": [r["lon"], r["lat"]]},
+             "properties": {"session_id": r["session_id"],
+                            "observed_at": _iso(r["observed_at"]),
+                            "codebook": r["codebook"],
+                            "flags": r["flags"]}}
+            for r in rows
+        ],
+        "metadata": {
+            "normalized": normalized,
+            "mapped": len(rows),
+            "mapped_raw": c["raw"],
+            "mapped_normalized": c["norm"],
+            # 실측 오판 건수와 지도에 찍히는 수가 다르다. 숨기지 않는다.
+            "misjudged_total": MISJUDGED_TOTAL,
+            "not_mappable": no_coord,
+            "coverage_note": (
+                f"정규화 없이 판정하면 {MISJUDGED_TOTAL:,}건이 비상정지로 잡힙니다. 그중 "
+                f"{no_coord}건은 좌표가 유효하지 않아 지도에 표시할 수 없어 "
+                f"{c['raw']}개만 찍힙니다. 정규화를 적용하면 {c['norm']}건만 남습니다."),
+        },
+    }
+
+
+@router.get("/trajectories", summary="주행 궤적 (GeoJSON)")
+def trajectories(session_id: str | None = Query(None, description="특정 세션만")):
+    """차량이 실제로 지나간 경로.
+
+    격자 사각형은 분석 단위지 주행이 아니다. 실제 궤적을 함께 그리면 셀이
+    허공에 뜬 게 아니라 주행 경로 위에 얹혀 있음이 눈으로 확인된다.
+    """
+    sql = ("select session_id, lon, lat, obs_second from trajectories "
+           + ("where session_id = %s " if session_id else "")
+           + "order by session_id, obs_second")
+    with cursor() as cur:
+        cur.execute(sql, (session_id,) if session_id else ())
+        rows = cur.fetchall()
+
+    lines: dict[str, list] = {}
+    for r in rows:
+        lines.setdefault(r["session_id"], []).append([r["lon"], r["lat"]])
+    return {
+        "type": "FeatureCollection",
+        "features": [
+            {"type": "Feature",
+             "geometry": {"type": "LineString", "coordinates": pts},
+             "properties": {"session_id": sid, "seconds": len(pts)}}
+            for sid, pts in sorted(lines.items()) if len(pts) > 1
+        ],
+        "metadata": {"sessions": len(lines), "points": len(rows),
+                     "note": "초당 대표 위치. GPS 원본은 100Hz 이나 지도에는 초당 1점이면 충분하다."},
+    }
+
+
+def _iso(v):
+    return v.isoformat() if hasattr(v, "isoformat") else v
