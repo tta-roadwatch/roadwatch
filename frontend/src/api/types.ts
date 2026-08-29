@@ -257,3 +257,66 @@ export interface DatasetMeta {
     measurableNote: string | null;
   };
 }
+
+// ── SCR-09 표준 현황 ─────────────────────────────────────────
+
+export type StandardStatus = "implemented" | "partial" | "reference";
+
+export interface StandardRow {
+  id: string;
+  name: string;
+  role: string;
+  status: StandardStatus;
+  /** 실제 응답을 눌러 확인할 수 있는 경로. 설계 참조 항목은 null 이다. */
+  evidence: string | null;
+  note: string;
+  status_label: string;
+}
+
+export interface Standards {
+  standards: StandardRow[];
+  summary: Record<StandardStatus, number>;
+  note: string;
+  spatial_note: string;
+}
+
+// ── 지도 레이어 (GeoJSON) ────────────────────────────────────
+
+export interface CellFeatureProperties {
+  cell_key: string;
+  center: [number, number];
+  road_name: string | null;
+  address: string | null;
+  lanes: number | null;
+  max_speed: number | null;
+  classification: Classification | null;
+  session_count: number | null;
+  observed_sessions: number;
+  min_event_rate: number | null;
+  max_event_rate: number | null;
+  is_candidate: boolean;
+  inspection_status: InspectionStatus | null;
+}
+
+export interface CellFeatureCollection {
+  type: "FeatureCollection";
+  features: {
+    type: "Feature";
+    id: string;
+    geometry: { type: "Polygon"; coordinates: number[][][] };
+    properties: CellFeatureProperties;
+  }[];
+  metadata: { cell_size_m: number; d_lat: number; d_lon: number; count: number };
+}
+
+export interface RoadLinkCollection {
+  type: "FeatureCollection";
+  features: unknown[];
+  metadata: { source: string; crs_note: string; count: number };
+}
+
+export interface MapBounds {
+  bbox: [number, number, number, number] | null;
+  center: [number, number] | null;
+  place_name: string;
+}

@@ -699,6 +699,9 @@
 
 .rw-cols--2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* 원본과 정규화 결과를 나란히 두는 자리다. 내용 길이가 달라도 두 장의
+     높이가 어긋나면 비교가 어려워지므로 같은 높이로 늘린다. */
+  align-items: stretch;
 }
 
 .rw-cols--detail {
@@ -758,6 +761,92 @@
 }
 
 .rw-famline__range {
+  font-size: var(--rw-size-aux);
+  color: var(--rw-text-secondary);
+}
+
+/* ── 하위 탭 ──────────────────────────────────────────────── */
+
+.rw-subtabs {
+  display: flex;
+  gap: var(--rw-space-6);
+  border-bottom: 1px solid var(--rw-border);
+}
+
+.rw-subtabs__link {
+  padding: var(--rw-space-3) var(--rw-space-1);
+  margin-bottom: -1px;
+  border-bottom: 3px solid transparent;
+  color: var(--rw-text-secondary);
+  font-size: var(--rw-size-body);
+}
+
+.rw-subtabs__link:hover {
+  color: var(--rw-text);
+  text-decoration: none;
+}
+
+.rw-subtabs__link[aria-current="page"] {
+  color: var(--rw-primary-text);
+  border-bottom-color: var(--rw-primary);
+  font-weight: var(--rw-weight-bold);
+}
+
+/* ── 전·후 대비 (정규화 · 개선) ───────────────────────────── */
+
+.rw-flip {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--rw-space-6);
+}
+
+@media (max-width: 900px) {
+  .rw-flip {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rw-flip__arrow {
+    transform: rotate(90deg);
+  }
+}
+
+.rw-flip__arrow {
+  color: var(--rw-text-muted);
+  font-size: var(--rw-size-page-title);
+  line-height: 1;
+}
+
+.rw-figure {
+  padding: var(--rw-space-6);
+  border: 1px solid var(--rw-border);
+  border-radius: var(--rw-radius-lg);
+  background: var(--rw-surface);
+}
+
+.rw-figure__label {
+  font-size: var(--rw-size-aux);
+  color: var(--rw-text-secondary);
+}
+
+.rw-figure__value {
+  margin-top: var(--rw-space-2);
+  font-size: var(--rw-size-page-title);
+  font-weight: var(--rw-weight-bold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.rw-figure__value--wrong {
+  color: var(--rw-intermittent-text);
+}
+
+.rw-figure__value--right {
+  color: var(--rw-low-text);
+}
+
+.rw-figure__foot {
+  margin-top: var(--rw-space-3);
   font-size: var(--rw-size-aux);
   color: var(--rw-text-secondary);
 }

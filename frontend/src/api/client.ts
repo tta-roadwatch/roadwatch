@@ -2,6 +2,7 @@
 
 import type {
   Cell,
+  CellFeatureCollection,
   CellDetail,
   Comparison,
   Dashboard,
@@ -10,9 +11,12 @@ import type {
   Inspection,
   InspectionCreate,
   InspectionStatus,
+  MapBounds,
   Normalization,
   Quality,
   Report,
+  RoadLinkCollection,
+  Standards,
 } from "./types";
 
 const BASE = (import.meta.env.VITE_API_BASE || "http://localhost:8000").replace(
@@ -106,6 +110,28 @@ export const api = {
     }),
 
   datasets: () => request<DatasetMeta[]>("/ngsi-ld/v1/datasets"),
+
+  standards: () => request<Standards>("/api/standards"),
+
+  /** SCR-09 — 표준 준수 근거를 화면에서 눌러 확인할 수 있게 원문 그대로 받는다 */
+  raw: (path: string) => request<unknown>(path),
+
+  // ── 지도 레이어 ────────────────────────────────────────────
+  // 격자 경계와 초기 뷰포트는 서버가 계산해 준다. 격자 규약(DLAT/DLON/LAT0)은
+  // 캘리브레이션으로 정한 분석 규약이라 화면이 알 일이 아니고, 판교 좌표도
+  // 하드코딩하지 않는다.
+
+  geoCells: (candidatesOnly = false) =>
+    request<CellFeatureCollection>(
+      `/api/geo/cells${candidatesOnly ? "?candidates_only=true" : ""}`,
+    ),
+
+  geoRoadLinks: (namedOnly = true) =>
+    request<RoadLinkCollection>(
+      `/api/geo/roadlinks${namedOnly ? "?named_only=true" : ""}`,
+    ),
+
+  geoBounds: () => request<MapBounds>("/api/geo/bounds"),
 
   /** SCR-09 — 표준 응답을 화면에서 그대로 보여주기 위한 원문 조회 */
   entities: (opts?: { keyValues?: boolean; limit?: number }) => {
