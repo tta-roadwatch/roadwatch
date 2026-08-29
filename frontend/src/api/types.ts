@@ -144,8 +144,13 @@ export interface FamilySummary {
   max_event_rate: number | null;
 }
 
+/** 상세 응답의 격자는 목록 응답과 필드가 다르다. observed_sessions 와
+ *  inspection_status 는 목록에만 있고, 상세에서는 observations · inspections
+ *  배열에서 직접 세야 한다. */
+export type CellDetailCell = Omit<Cell, "observed_sessions" | "inspection_status">;
+
 export interface CellDetail {
-  cell: Cell & { session_count: number | null };
+  cell: CellDetailCell;
   observations: Observation[];
   inspections: Inspection[];
   /** 갈래별 요약. 화면은 반드시 이 단위로 나눠 보여준다. */

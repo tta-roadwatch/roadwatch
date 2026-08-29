@@ -850,3 +850,51 @@
   font-size: var(--rw-size-aux);
   color: var(--rw-text-secondary);
 }
+
+/* ── 지도 ─────────────────────────────────────────────────── */
+
+.rw-map-card {
+  overflow: hidden;
+  padding: 0;
+}
+
+.rw-map {
+  width: 100%;
+  height: 620px;
+  background: var(--rw-bg);
+}
+
+.rw-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rw-space-3) var(--rw-space-6);
+  padding: var(--rw-space-4) var(--rw-space-5);
+}
+
+.rw-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--rw-space-2);
+}
+
+.rw-legend__swatch {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  border-radius: var(--rw-radius-sm);
+}
+
+/* 체크박스 라벨 안에서 색 견본과 개수를 양끝으로 벌린다 */
+.rw-check .rw-check__text {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rw-space-3);
+  width: 100%;
+}
+
+/* MapLibre 기본 컨트롤을 KRDS 표면색에 맞춘다 */
+.maplibregl-ctrl-group {
+  border-radius: var(--rw-radius-lg) !important;
+  box-shadow: var(--rw-shadow-card) !important;
+}
