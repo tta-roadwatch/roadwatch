@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 import { api } from "../api/client";
 import { useApi } from "../api/useApi";
@@ -42,7 +42,21 @@ interface Bundle {
 export function MapPage() {
   const [visible, setVisible] = useState<ClassKey[]>(LEGEND);
   const [minSessions, setMinSessions] = useState(1);
-  const [selected, setSelected] = useState<string | null>(null);
+
+  // 구간 상세의 "지도에서 보기"로 들어오면 해당 격자를 미리 선택해 둔다.
+  // 선택 상태를 URL 에 두면 링크를 그대로 공유할 수도 있다.
+  const [params, setParams] = useSearchParams();
+  const selected = params.get("cell");
+  const setSelected = (cellKey: string | null) =>
+    setParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (cellKey) next.set("cell", cellKey);
+        else next.delete("cell");
+        return next;
+      },
+      { replace: true },
+    );
 
   const { data, loading, error, reload } = useApi<Bundle>(async () => {
     const [cells, roads, bounds] = await Promise.all([
