@@ -38,16 +38,12 @@
   text-decoration: none;
 }
 
-.rw-gnb__mark {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
+/* 로고 이미지가 자체 배경을 갖고 있어 뒤에 색을 깔지 않는다.
+   원본이 정사각형에서 1px 어긋나 있어 cover 로 잘라 맞춘다. */
+.rw-logo {
+  flex: none;
   border-radius: var(--rw-radius-lg);
-  background: var(--rw-primary);
-  color: var(--rw-text-on-fill);
-  font-size: var(--rw-size-aux);
-  font-weight: var(--rw-weight-bold);
+  object-fit: cover;
 }
 
 .rw-gnb__menu {

@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../auth/AuthContext";
+import { Logo } from "./Logo";
 
 /** 상단 메뉴. 목업의 5개 대분류를 그대로 따른다. */
 const MENU = [
@@ -21,9 +22,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <header className="rw-gnb">
         <div className="rw-gnb__inner">
           <Link to="/" className="rw-gnb__brand">
-            <span className="rw-gnb__mark" aria-hidden="true">
-              RW
-            </span>
+            <Logo />
             자율주행 취약도로 탐지
           </Link>
 

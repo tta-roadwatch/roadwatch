@@ -5,6 +5,7 @@ import { api } from "../api/client";
 import { useApi } from "../api/useApi";
 import { useAuth } from "../auth/AuthContext";
 import { Alert } from "../components/Alert";
+import { Logo } from "../components/Logo";
 import { Loading } from "../components/States";
 
 /** 로그인 화면.
@@ -51,9 +52,7 @@ export function Login() {
     <div className="rw-login">
       <div className="rw-login__panel">
         <div className="rw-login__brand">
-          <span className="rw-gnb__mark" aria-hidden="true">
-            RW
-          </span>
+          <Logo size={40} />
           <div>
             <h1 className="rw-card-title">자율주행 취약도로 탐지</h1>
             <p className="rw-aux">경기도자율주행센터 · 도로관리 담당자용</p>
