@@ -127,8 +127,7 @@ export function Inspections() {
                     <th scope="col">도로명</th>
                     <th scope="col">등록일</th>
                     <th scope="col">점검 결과</th>
-                    <th scope="col">담당</th>
-                    <th scope="col">상태</th>
+                    <th scope="col">상태 · 담당</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -148,18 +147,32 @@ export function Inspections() {
                           )}
                         </td>
                         <td>
-                          <div className="rw-row">
+                          {/* 도로명과 배지를 한 줄에 두면 이 칸 하나가 300px 를
+                              먹어 나머지 칸이 무너진다. 세로로 쌓는다. */}
+                          <div className="rw-stack-sm">
                             <span>{i.road_name ?? "도로명 미상"}</span>
-                            <ClassBadge classification={i.classification} short />
+                            <span>
+                              <ClassBadge classification={i.classification} short />
+                            </span>
                           </div>
                         </td>
                         <td className="rw-num">{day(i.created_at)}</td>
                         <td>
                           {i.findings.length > 0 ? i.findings.join(", ") : "—"}
                         </td>
-                        <td className="rw-aux">{i.inspector ?? "—"}</td>
+                        {/* 상태와 담당자를 한 칸에 쌓는다. 열을 하나 줄여야
+                            좁은 창에서 표가 가로로 넘치지 않는다. */}
                         <td>
-                          <StatusBadge status={i.status} />
+                          <div className="rw-stack-sm">
+                            <span>
+                              <StatusBadge status={i.status} />
+                            </span>
+                            {/* 담당자가 없으면 줄 자체를 두지 않는다.
+                                빈 자리 표시가 줄마다 쌓이면 표만 시끄러워진다. */}
+                            {i.inspector && (
+                              <span className="rw-aux">{i.inspector}</span>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );

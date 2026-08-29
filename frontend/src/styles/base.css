@@ -22,6 +22,10 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   text-size-adjust: 100%;
+  /* 한글은 음절마다 줄바꿈이 가능해서, 좁은 표 칸에서 '대왕판교로'가 한 글자씩
+     세로로 쌓인다. keep-all 로 낱말 중간을 끊지 않게 한다 — 칸이 모자라면
+     글자를 쪼개는 대신 표가 가로로 넘치고, 감싼 요소가 스크롤한다. */
+  word-break: keep-all;
 }
 
 h1,
@@ -138,7 +142,14 @@ table {
   width: 100%;
   max-width: var(--rw-max-width);
   margin: 0 auto;
-  padding: var(--rw-space-8) var(--rw-space-6) var(--rw-space-12);
+  padding: var(--rw-space-8) var(--rw-gutter) var(--rw-space-12);
+}
+
+@media (max-width: 900px) {
+  .rw-main {
+    padding-left: var(--rw-space-5);
+    padding-right: var(--rw-space-5);
+  }
 }
 
 .rw-stack {

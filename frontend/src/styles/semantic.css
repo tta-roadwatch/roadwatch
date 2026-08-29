@@ -105,5 +105,9 @@
   --rw-shadow-card: 0 1px 2px rgba(30, 33, 36, 0.06);
   --rw-shadow-alert: 0 2px 8px rgba(30, 33, 36, 0.08);
 
-  --rw-max-width: 1360px;
+  /* 목업이 1440 프레임에 좌우 여백 40 이라 내용 폭이 1360 이다.
+     max-width 를 1360 으로 잡고 padding 을 더하면 여백이 그만큼 더 벌어진다.
+     프레임 폭을 담고 여백을 padding 으로 빼야 목업과 같은 자리에 선다. */
+  --rw-max-width: 1440px;
+  --rw-gutter: var(--rw-space-10);
 }

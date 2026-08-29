@@ -13,8 +13,15 @@
   gap: var(--rw-space-8);
   max-width: var(--rw-max-width);
   margin: 0 auto;
-  padding: 0 var(--rw-space-6);
+  /* 본문과 같은 여백을 써야 로고와 첫 카드의 왼쪽 선이 맞는다 */
+  padding: 0 var(--rw-gutter);
   height: 72px;
+}
+
+@media (max-width: 900px) {
+  .rw-gnb__inner {
+    padding: 0 var(--rw-space-5);
+  }
 }
 
 .rw-gnb__brand {
@@ -334,11 +341,24 @@
   font-size: var(--rw-size-body);
 }
 
+/* 좌우 24px 는 6열짜리 표에서 칸당 48px 씩, 표 하나에 288px 를 여백으로
+   버린다. 그만큼 글자가 들어갈 자리가 줄어 칸이 무너진다. */
 .rw-table th,
 .rw-table td {
-  padding: var(--rw-space-4) var(--rw-space-6);
+  padding: var(--rw-space-3) var(--rw-space-4);
   text-align: left;
   vertical-align: middle;
+}
+
+/* 카드 머리와 표의 첫 칸이 같은 선에서 시작하게 맞춘다 */
+.rw-table th:first-child,
+.rw-table td:first-child {
+  padding-left: var(--rw-space-6);
+}
+
+.rw-table th:last-child,
+.rw-table td:last-child {
+  padding-right: var(--rw-space-6);
 }
 
 .rw-table thead th {
@@ -708,12 +728,19 @@
   grid-template-columns: minmax(0, 1.6fr) minmax(320px, 1fr);
 }
 
+/* 지도가 주인공이라 남는 폭은 지도가 가져간다. 양옆을 fr 로 두면 필터와
+   패널이 같이 커지면서 정작 지도가 좁아진다. */
 .rw-cols--map {
-  grid-template-columns: minmax(240px, 300px) minmax(0, 1fr) minmax(300px, 360px);
+  grid-template-columns: 240px minmax(0, 1fr) 320px;
 }
 
+/* 필터를 지도 위 전체 폭으로 올려도 봤지만, 카드 하나가 세로로 길게 늘어나
+   정작 지도가 화면 아래로 밀려난다. 좁아지면 세 단을 유지한 채 지도만 줄이고,
+   더 좁아지면 아래 1180px 규칙이 전부 한 단으로 떨군다. */
+
+/* 등록 폼은 넓어져도 쓸모가 없다. 남는 폭은 표가 가져가야 칸이 안 무너진다. */
 .rw-cols--form {
-  grid-template-columns: minmax(0, 1.5fr) minmax(340px, 1fr);
+  grid-template-columns: minmax(0, 1fr) 380px;
 }
 
 @media (max-width: 1180px) {
