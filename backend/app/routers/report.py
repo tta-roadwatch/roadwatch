@@ -16,7 +16,7 @@ from decimal import ROUND_HALF_UP, Decimal
 
 from fastapi import APIRouter
 
-from .. import errors
+from .. import errors, families
 from ..deps import cursor
 
 router = APIRouter(prefix="/api", tags=["화면"])
@@ -52,7 +52,8 @@ def _facts(cell_key: str) -> dict:
             raise errors.not_found(f"해당 격자가 없습니다: {cell_key}")
         cur.execute("""
             select o.session_id, o.observation_count, o.event_count, o.event_rate,
-                   o.event_types, o.measurable, s.actual_start
+                   o.event_types, o.measurable,
+                   s.actual_start, s.available_metrics
             from cell_observations o join sessions s on s.id = o.session_id
             where o.cell_key = %s order by s.actual_start
         """, (cell_key,))
@@ -102,13 +103,18 @@ def _brief(f: dict) -> str:
         f"분류: {f.get('classification') or '판정 없음'}"
         f" (관측 세션 {f.get('session_count') or 0}개)",
     ]
+    # 갈래를 나눠 넘긴다. 한 덩어리로 주면 모델이 "0%에서 100%를 오간다" 같은
+    # 문장을 쓰는데, 그건 이벤트 정의가 다른 값을 비교한 것이라 틀린 서술이다.
+    for fam, obs in families.group(f["observations"]).items():
+        lines.append(f"[{families.FAMILY_LABEL[fam]}]")
+        for o in obs:
+            lines.append(
+                f"- {o['session_id']}: 이벤트 {o['event_count']}초 / 관측 "
+                f"{o['observation_count']}초 = {pct(o['event_rate'] or 0)}%")
     for o in f["observations"]:
         if not o["measurable"]:
             lines.append(f"- {o['session_id']}: 측정 불가 (해당 세션에 필요한 데이터셋 없음)")
-            continue
-        lines.append(
-            f"- {o['session_id']}: 이벤트 {o['event_count']}초 / 관측 "
-            f"{o['observation_count']}초 = {pct(o['event_rate'] or 0)}%")
+    lines.append("※ 두 갈래는 이벤트 정의가 다르므로 이벤트율을 서로 비교하지 마세요.")
     primary, refs = _event_type_summary(f["observations"])
     if primary:
         lines.append("판정 이벤트: " + ", ".join(LABEL.get(t, t) for t in primary))
@@ -120,21 +126,25 @@ def _brief(f: dict) -> str:
 
 def _template(f: dict) -> str:
     """폴백. 수치를 문장에 채워 넣되 원인은 단정하지 않는다."""
-    measured = [o for o in f["observations"] if o["measurable"]]
     road = f.get("road_name") or f"격자 {f['cell_key']}"
-    if len(measured) >= 2:
-        lo, hi = measured[0], measured[-1]
-        rates = ", ".join(pct(o["event_rate"] or 0) + "%" for o in measured)
-        head = (
-            f"{road} 구간은 서로 다른 {len(measured)}개 주행 세션에서 이상 이벤트가 "
-            f"반복 검출되었습니다. {lo['session_id']}부터 {hi['session_id']}까지 "
-            f"세션별 이벤트율은 {rates}입니다.")
-    elif measured:
-        o = measured[0]
-        head = (f"{road} 구간은 {o['session_id']} 주행에서 "
-                f"{pct(o['event_rate'] or 0)}%의 이상 이벤트율을 보였습니다.")
-    else:
+    grouped = families.group(f["observations"])
+    total = sum(len(v) for v in grouped.values())
+
+    if not grouped:
         head = f"{road} 구간은 아직 측정 가능한 관측이 없습니다."
+    else:
+        parts = []
+        for fam, obs in grouped.items():
+            rates = [o["event_rate"] or 0 for o in obs]
+            span = (f"{pct(min(rates))}~{pct(max(rates))}%" if len(obs) > 1
+                    else f"{pct(rates[0])}%")
+            parts.append(
+                f"{families.FAMILY_SHORT[fam]}에서 {len(obs)}개 세션 {span}")
+        head = (f"{road} 구간은 서로 다른 {total}개 주행 세션에서 이상 이벤트가 "
+                f"반복 검출되었습니다. " + ", ".join(parts) + "입니다. "
+                "두 갈래는 이벤트 정의가 달라 수치를 서로 비교하지 않습니다."
+                if len(grouped) > 1 else
+                f"{road} 구간은 " + ", ".join(parts) + "로 이상 이벤트가 관측되었습니다.")
 
     primary, refs = _event_type_summary(f["observations"])
     mid = ""

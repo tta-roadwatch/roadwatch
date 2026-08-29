@@ -13,6 +13,7 @@ from fastapi import APIRouter
 
 from .. import errors
 from ..deps import cursor
+from .. import families
 from ..codebook_facts import NORMALIZATION
 
 router = APIRouter(prefix="/api", tags=["화면"])
@@ -30,25 +31,6 @@ CLASS_LABEL = {
     "always_manual": "상시 수동 · 후보 아님",
     "low": "낮음 · 관찰",
 }
-
-#: 세션이 어느 분석 갈래에 속하는지. 갈래마다 이벤트 정의가 다르므로 이벤트율을
-#: 나란히 비교하면 안 된다 — BSM 갈래는 비상정지·자율주행 해제 기준이고,
-#: 조인 갈래는 저속(min ve < 2.0m/s) 기준이다. 화면에서 섞어 보여주면
-#: 같은 구간이 0%와 100% 를 오가는 것처럼 읽힌다.
-FAMILY_LABEL = {
-    "bsm": "BSM 갈래 (비상정지·자율주행 해제)",
-    "joined": "조인 갈래 (저속 정체)",
-}
-
-
-def _family(metrics: list[str] | None) -> str | None:
-    m = set(metrics or [])
-    if m & {"emergency", "autonomy_disengage"}:
-        return "bsm"
-    if m & {"low_speed", "state_deviation", "obstacle_density"}:
-        return "joined"
-    return None
-
 
 @router.get("/dashboard", summary="SCR-01 대시보드")
 def dashboard():
@@ -287,8 +269,8 @@ def cell_detail(cell_key: str):
                 "event_count": o["event_count"],
                 "event_rate": _r(o["event_rate"]),
                 "event_types": o["event_types"],
-                "metric_family": _family(o["available_metrics"]),
-                "metric_family_label": FAMILY_LABEL.get(_family(o["available_metrics"])),
+                "metric_family": families.family_of(o["available_metrics"]),
+                "metric_family_label": families.FAMILY_LABEL.get(families.family_of(o["available_metrics"])),
                 "available_metrics": [
                     METRIC_LABEL.get(m, m) for m in (o["available_metrics"] or [])
                 ],
@@ -298,9 +280,7 @@ def cell_detail(cell_key: str):
         "inspections": [_inspection(i) for i in insp],
         # 갈래별 요약. 화면은 이걸로 "같은 정의끼리" 비교해 보여준다.
         "by_family": _family_summary(obs),
-        "family_notice": ("BSM 갈래와 조인 갈래는 이벤트 정의가 다르므로 이벤트율을 "
-                          "직접 비교하지 않습니다. 반복성 판정은 갈래를 구분하지 않고 "
-                          "수행하되, 표시할 때는 갈래를 나눠 보여줍니다."),
+        "family_notice": families.NOTICE,
     }
 
 
@@ -309,10 +289,10 @@ def _family_summary(obs: list[dict]) -> dict:
     for o in obs:
         if o["observation_count"] is None or not o["measurable"]:
             continue
-        fam = _family(o["available_metrics"])
+        fam = families.family_of(o["available_metrics"])
         if fam is None:
             continue
-        b = out.setdefault(fam, {"label": FAMILY_LABEL[fam], "sessions": [],
+        b = out.setdefault(fam, {"label": families.FAMILY_LABEL[fam], "sessions": [],
                                  "min_event_rate": None, "max_event_rate": None})
         rate = o["event_rate"] or 0
         b["sessions"].append({"session_id": o["session_id"],

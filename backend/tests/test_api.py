@@ -512,3 +512,45 @@ def test_empty_jwt_secret_env_falls_back(monkeypatch):
     finally:
         monkeypatch.delenv("JWT_SECRET", raising=False)
         importlib.reload(auth_mod)
+
+
+def test_report_never_flattens_metric_families(client, monkeypatch):
+    """리포트 본문이 갈래를 다시 합치면 안 된다.
+
+    화면(by_family)만 막고 리포트를 놓쳐서 "81.3%, 80.4%, 87.2%, 0.0%,
+    100.0%, 93.9%" 처럼 한 줄로 늘어놓던 버그가 있었다. 이벤트 정의가 다른
+    값을 나란히 세운 것이라 재현성 주장이 무너진다.
+    """
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "")
+    b = client.post("/api/cells/21:4/report").json()
+
+    # 모델에 넘기는 사실도, 사람이 읽는 본문도 갈래를 밝혀야 한다
+    assert "[조인 갈래" in b["facts"] and "[BSM 갈래" in b["facts"]
+    assert "비교하지 마세요" in b["facts"]
+    assert "조인 갈래" in b["text"] and "BSM 갈래" in b["text"]
+    assert "비교하지 않습니다" in b["text"]
+
+    # 갈래 표기 없이 여러 비율이 연달아 나열되면 섞인 것이다
+    import re
+    flat = re.search(r"(\d+\.\d%,\s*){3,}", b["text"])
+    assert flat is None, f"갈래 구분 없이 나열됐다: {flat.group() if flat else ''}"
+
+
+def test_family_grouping_is_shared_not_duplicated():
+    """화면과 리포트가 같은 판단을 쓰는지.
+
+    각자 재구현하면 한 곳만 고쳐지고 나머지가 어긋난다 — 실제로 그랬다.
+    """
+    from app import families
+    from app.routers import screens
+
+    assert screens.families is families
+    assert families.family_of(["low_speed"]) == families.JOINED
+    assert families.family_of(["emergency"]) == families.BSM
+    assert families.family_of([]) is None
+    # 조인 갈래가 먼저 온다 — 기획서가 주장하는 재현성이 그쪽이다
+    grouped = families.group([
+        {"observation_count": 1, "measurable": True, "available_metrics": ["emergency"]},
+        {"observation_count": 1, "measurable": True, "available_metrics": ["low_speed"]},
+    ])
+    assert list(grouped) == [families.JOINED, families.BSM]
