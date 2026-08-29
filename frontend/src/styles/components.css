@@ -1,0 +1,743 @@
+/* 화면 공통 부품. 각 화면이 색을 다시 정하지 않도록 여기서 끝낸다. */
+
+/* ── 상단 내비게이션 ──────────────────────────────────────── */
+
+.rw-gnb {
+  background: var(--rw-surface);
+  border-bottom: 1px solid var(--rw-border);
+}
+
+.rw-gnb__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--rw-space-8);
+  max-width: var(--rw-max-width);
+  margin: 0 auto;
+  padding: 0 var(--rw-space-6);
+  height: 72px;
+}
+
+.rw-gnb__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--rw-space-2);
+  font-size: var(--rw-size-card-title);
+  font-weight: var(--rw-weight-bold);
+  color: var(--rw-text);
+  white-space: nowrap;
+}
+
+.rw-gnb__brand:hover {
+  text-decoration: none;
+}
+
+.rw-gnb__mark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--rw-radius-lg);
+  background: var(--rw-primary);
+  color: var(--rw-text-on-fill);
+  font-size: var(--rw-size-aux);
+  font-weight: var(--rw-weight-bold);
+}
+
+.rw-gnb__menu {
+  display: flex;
+  align-items: center;
+  gap: var(--rw-space-1);
+}
+
+.rw-gnb__link {
+  display: block;
+  padding: var(--rw-space-3) var(--rw-space-4);
+  border-bottom: 3px solid transparent;
+  color: var(--rw-text-secondary);
+  font-size: var(--rw-size-body);
+  white-space: nowrap;
+}
+
+.rw-gnb__link:hover {
+  color: var(--rw-text);
+  text-decoration: none;
+}
+
+.rw-gnb__link[aria-current="page"] {
+  color: var(--rw-primary-text);
+  border-bottom-color: var(--rw-primary);
+  font-weight: var(--rw-weight-bold);
+}
+
+.rw-gnb__side {
+  display: flex;
+  align-items: center;
+  gap: var(--rw-space-4);
+  margin-left: auto;
+}
+
+/* ── 페이지 머리 ──────────────────────────────────────────── */
+
+.rw-page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--rw-space-6);
+  margin-bottom: var(--rw-space-6);
+}
+
+.rw-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--rw-space-2);
+  margin-bottom: var(--rw-space-3);
+  font-size: var(--rw-size-aux);
+  color: var(--rw-text-muted);
+}
+
+.rw-breadcrumb__sep {
+  color: var(--rw-border-strong);
+}
+
+/* ── 카드 ─────────────────────────────────────────────────── */
+
+.rw-card {
+  background: var(--rw-surface);
+  border: 1px solid var(--rw-border);
+  border-radius: var(--rw-radius-xl);
+  box-shadow: var(--rw-shadow-card);
+}
+
+.rw-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rw-space-4);
+  padding: var(--rw-space-5) var(--rw-space-6);
+  border-bottom: 1px solid var(--rw-border);
+}
+
+.rw-card__body {
+  padding: var(--rw-space-6);
+}
+
+.rw-card__foot {
+  padding: var(--rw-space-4) var(--rw-space-6);
+  border-top: 1px solid var(--rw-border);
+  font-size: var(--rw-size-aux);
+  color: var(--rw-text-secondary);
+}
+
+/* 표를 담는 카드는 표가 모서리까지 닿아야 하므로 패딩을 없앤다 */
+.rw-card__body--flush {
+  padding: 0;
+}
+
+/* ── 알림 배너 (KRDS critical_alerts) ─────────────────────────
+ * 흰 배경 + 테두리 + 그림자 + 좌측 심각도 배지.
+ * 배경을 색으로 채우거나 본문 텍스트를 물들이지 않는다. 색은 배지에만.
+ */
+
+.rw-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--rw-space-4);
+  padding: var(--rw-space-5) var(--rw-space-6);
+  background: var(--rw-surface);
+  border: 1px solid var(--rw-border);
+  border-radius: var(--rw-radius-xl);
+  box-shadow: var(--rw-shadow-alert);
+}
+
+.rw-alert__badge {
+  flex: none;
+  padding: var(--rw-space-1) var(--rw-space-3);
+  border-radius: var(--rw-radius-md);
+  color: var(--rw-text-on-fill);
+  font-size: var(--rw-size-aux);
+  font-weight: var(--rw-weight-bold);
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.rw-alert__badge--info {
+  background: var(--rw-alert-info);
+}
+
+.rw-alert__badge--caution {
+  background: var(--rw-alert-caution);
+}
+
+.rw-alert__badge--done {
+  background: var(--rw-alert-done);
+}
+
+.rw-alert__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.rw-alert__title {
+  font-size: var(--rw-size-card-title);
+  font-weight: var(--rw-weight-bold);
+  color: var(--rw-text);
+}
+
+/* 본문은 항상 중립색이다 */
+.rw-alert__text {
+  margin-top: var(--rw-space-1);
+  font-size: var(--rw-size-aux);
+  color: var(--rw-text-secondary);
+}
+
+.rw-alert__action {
+  flex: none;
+  align-self: center;
+}
+
+/* ── 배지 ─────────────────────────────────────────────────── */
+
+.rw-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--rw-space-1);
+  padding: var(--rw-space-1) var(--rw-space-3);
+  border: 1px solid transparent;
+  border-radius: var(--rw-radius-md);
+  font-size: var(--rw-size-aux);
+  font-weight: var(--rw-weight-bold);
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.rw-badge--intermittent {
+  background: var(--rw-intermittent-weak);
+  border-color: var(--rw-intermittent-border);
+  color: var(--rw-intermittent-text);
+}
+
+.rw-badge--always_manual {
+  background: var(--rw-manual-weak);
+  border-color: var(--rw-manual-border);
+  color: var(--rw-manual-text);
+}
+
+.rw-badge--low {
+  background: var(--rw-low-weak);
+  border-color: var(--rw-low-border);
+  color: var(--rw-low-text);
+}
+
+.rw-badge--unranked {
+  background: var(--rw-unranked-weak);
+  border-color: var(--rw-unranked-border);
+  color: var(--rw-unranked-text);
+}
+
+.rw-badge--primary {
+  background: var(--rw-primary-weak);
+  border-color: var(--krds-color-light-primary-20);
+  color: var(--rw-primary-text);
+}
+
+/* 시뮬레이션 — 실측이 아님을 알리는 표기 */
+.rw-badge--simulated {
+  background: var(--rw-sim-weak);
+  border-color: var(--rw-sim-border);
+  color: var(--rw-sim-text);
+}
+
+.rw-badge--measured {
+  background: var(--rw-surface-sunken);
+  border-color: var(--rw-border);
+  color: var(--rw-text-secondary);
+}
+
+.rw-badge__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--rw-radius-sm);
+  background: currentColor;
+}
+
+/* ── 버튼 ─────────────────────────────────────────────────── */
+
+.rw-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rw-space-2);
+  padding: var(--rw-space-3) var(--rw-space-5);
+  border: 1px solid transparent;
+  border-radius: var(--rw-radius-lg);
+  font-size: var(--rw-size-body);
+  font-weight: var(--rw-weight-bold);
+  line-height: 1.5;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.rw-btn:hover {
+  text-decoration: none;
+}
+
+.rw-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.rw-btn--primary {
+  background: var(--rw-primary);
+  color: var(--rw-text-on-fill);
+}
+
+.rw-btn--primary:hover:not(:disabled) {
+  background: var(--rw-primary-hover);
+}
+
+.rw-btn--secondary {
+  background: var(--rw-surface);
+  border-color: var(--rw-border-control);
+  color: var(--rw-text);
+}
+
+.rw-btn--secondary:hover:not(:disabled) {
+  background: var(--rw-surface-sunken);
+}
+
+.rw-btn--ghost {
+  background: transparent;
+  color: var(--rw-primary-text);
+  padding: var(--rw-space-2) var(--rw-space-3);
+}
+
+.rw-btn--ghost:hover:not(:disabled) {
+  background: var(--rw-primary-weak);
+}
+
+.rw-btn--sm {
+  padding: var(--rw-space-2) var(--rw-space-4);
+  font-size: var(--rw-size-aux);
+}
+
+.rw-btn--block {
+  width: 100%;
+}
+
+/* ── 표 ───────────────────────────────────────────────────── */
+
+.rw-table-wrap {
+  overflow-x: auto;
+}
+
+.rw-table {
+  font-size: var(--rw-size-body);
+}
+
+.rw-table th,
+.rw-table td {
+  padding: var(--rw-space-4) var(--rw-space-6);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.rw-table thead th {
+  background: var(--rw-surface-sunken);
+  border-bottom: 1px solid var(--rw-border);
+  color: var(--rw-text-secondary);
+  font-size: var(--rw-size-aux);
+  font-weight: var(--rw-weight-regular);
+  white-space: nowrap;
+}
+
+.rw-table tbody tr + tr td {
+  border-top: 1px solid var(--rw-border);
+}
+
+.rw-table tbody tr[data-clickable="true"] {
+  cursor: pointer;
+}
+
+.rw-table tbody tr[data-clickable="true"]:hover td {
+  background: var(--rw-surface-sunken);
+}
+
+.rw-table__num {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ── 통계 타일 ────────────────────────────────────────────── */
+
+.rw-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.rw-stat {
+  padding: var(--rw-space-5) var(--rw-space-6);
+}
+
+.rw-stat + .rw-stat {
+  border-left: 1px solid var(--rw-border);
+}
+
+.rw-stat__label {
+  font-size: var(--rw-size-aux);
+  color: var(--rw-text-secondary);
+}
+
+.rw-stat__value {
+  margin-top: var(--rw-space-2);
+  font-size: var(--rw-size-page-title);
+  font-weight: var(--rw-weight-bold);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.rw-stat__unit {
+  margin-left: var(--rw-space-1);
+  font-size: var(--rw-size-aux);
+  font-weight: var(--rw-weight-regular);
+  color: var(--rw-text-secondary);
+}
+
+/* ── 이벤트율 막대 ────────────────────────────────────────── */
+
+.rw-bar {
+  height: 8px;
+  border-radius: var(--rw-radius-sm);
+  background: var(--krds-color-light-gray-10);
+  overflow: hidden;
+}
+
+.rw-bar__fill {
+  height: 100%;
+  border-radius: var(--rw-radius-sm);
+}
+
+.rw-bar__fill--intermittent {
+  background: var(--rw-intermittent);
+}
+
+.rw-bar__fill--always_manual {
+  background: var(--rw-manual);
+}
+
+.rw-bar__fill--low {
+  background: var(--rw-low);
+}
+
+.rw-bar__fill--primary {
+  background: var(--rw-primary);
+}
+
+/* 측정 불가는 채우지 않고 빗금으로 비운다 — 0% 와 구분되어야 한다 */
+.rw-bar--unmeasurable {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--krds-color-light-gray-10) 0 6px,
+    var(--krds-color-light-gray-5) 6px 12px
+  );
+}
+
+/* ── 폼 ───────────────────────────────────────────────────── */
+
+.rw-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rw-space-2);
+}
+
+.rw-label {
+  font-size: var(--rw-size-aux);
+  font-weight: var(--rw-weight-bold);
+  color: var(--rw-text);
+}
+
+.rw-input,
+.rw-textarea,
+.rw-select {
+  width: 100%;
+  padding: var(--rw-space-3) var(--rw-space-4);
+  /* Gray 60 — WCAG 1.4.11 의 3:1 을 충족하는 경계 */
+  border: 1px solid var(--rw-border-control);
+  border-radius: var(--rw-radius-lg);
+  background: var(--rw-surface);
+  color: var(--rw-text);
+  font-family: inherit;
+  font-size: var(--rw-size-body);
+}
+
+.rw-textarea {
+  min-height: 88px;
+  resize: vertical;
+}
+
+.rw-input::placeholder,
+.rw-textarea::placeholder {
+  color: var(--rw-text-muted);
+}
+
+.rw-check {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--rw-space-3);
+  padding: var(--rw-space-2) 0;
+  cursor: pointer;
+}
+
+.rw-check input[type="checkbox"] {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin: 2px 0 0;
+  accent-color: var(--rw-primary);
+  cursor: pointer;
+}
+
+.rw-check__text {
+  font-size: var(--rw-size-body);
+}
+
+/* ── 토글 스위치 ──────────────────────────────────────────── */
+
+.rw-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--rw-space-3);
+  cursor: pointer;
+}
+
+.rw-toggle__track {
+  position: relative;
+  flex: none;
+  width: 52px;
+  height: 28px;
+  border-radius: var(--rw-radius-xl);
+  background: var(--krds-color-light-gray-30);
+  transition: background 0.15s ease;
+}
+
+.rw-toggle__track[data-on="true"] {
+  background: var(--rw-primary);
+}
+
+.rw-toggle__thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--rw-radius-xl);
+  background: var(--rw-surface);
+  transition: transform 0.15s ease;
+}
+
+.rw-toggle__track[data-on="true"] .rw-toggle__thumb {
+  transform: translateX(24px);
+}
+
+.rw-toggle__label {
+  font-size: var(--rw-size-body);
+  font-weight: var(--rw-weight-bold);
+}
+
+/* ── 코드 블록 ────────────────────────────────────────────── */
+
+.rw-code {
+  margin: 0;
+  padding: var(--rw-space-5);
+  background: var(--rw-surface-sunken);
+  border: 1px solid var(--rw-border);
+  border-radius: var(--rw-radius-lg);
+  color: var(--rw-text);
+  font-family: var(--rw-font-mono);
+  font-size: var(--rw-size-aux);
+  line-height: 1.7;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+/* ── 상태 표시 ────────────────────────────────────────────── */
+
+.rw-state {
+  display: grid;
+  place-items: center;
+  gap: var(--rw-space-3);
+  padding: var(--rw-space-12) var(--rw-space-6);
+  text-align: center;
+  color: var(--rw-text-secondary);
+}
+
+.rw-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--krds-color-light-gray-10);
+  border-top-color: var(--rw-primary);
+  border-radius: 50%;
+  animation: rw-spin 0.7s linear infinite;
+}
+
+@keyframes rw-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rw-spinner {
+    animation-duration: 2s;
+  }
+
+  .rw-toggle__track,
+  .rw-toggle__thumb {
+    transition: none;
+  }
+}
+
+/* ── 이벤트율 한 줄 ───────────────────────────────────────── */
+
+.rw-rate + .rw-rate {
+  margin-top: var(--rw-space-5);
+}
+
+.rw-rate__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--rw-space-4);
+  margin-bottom: var(--rw-space-2);
+}
+
+.rw-rate__value {
+  font-size: var(--rw-size-card-title);
+  font-weight: var(--rw-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.rw-rate__value--intermittent {
+  color: var(--rw-intermittent-text);
+}
+
+.rw-rate__value--always_manual {
+  color: var(--rw-manual-text);
+}
+
+.rw-rate__value--low {
+  color: var(--rw-low-text);
+}
+
+.rw-rate__value--unranked,
+.rw-rate__value--primary {
+  color: var(--rw-primary-text);
+}
+
+/* 측정 불가·관측 없음은 수치가 아니므로 강조하지 않는다 */
+.rw-rate__value--none {
+  color: var(--rw-text-muted);
+  font-size: var(--rw-size-body);
+}
+
+.rw-rate__foot {
+  margin-top: var(--rw-space-2);
+}
+
+/* ── 갈래 구분 ────────────────────────────────────────────────
+ * BSM 갈래와 조인 갈래는 이벤트 정의가 달라 이벤트율을 나란히 비교하면
+ * 안 된다. 시각적으로도 명확히 끊어 놓는다.
+ */
+
+.rw-family + .rw-family {
+  margin-top: var(--rw-space-8);
+  padding-top: var(--rw-space-6);
+  border-top: 1px solid var(--rw-border);
+}
+
+.rw-family__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--rw-space-4);
+  margin-bottom: var(--rw-space-5);
+}
+
+.rw-family__title {
+  font-size: var(--rw-size-body);
+  font-weight: var(--rw-weight-bold);
+}
+
+.rw-family__range {
+  font-size: var(--rw-size-aux);
+  color: var(--rw-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 안내 문구 상자 ───────────────────────────────────────── */
+
+.rw-note {
+  padding: var(--rw-space-4);
+  background: var(--rw-surface-sunken);
+  border-radius: var(--rw-radius-lg);
+  font-size: var(--rw-size-aux);
+  color: var(--rw-text-secondary);
+}
+
+.rw-note--sim {
+  background: var(--rw-sim-weak);
+  border: 1px solid var(--rw-sim-border);
+  color: var(--rw-text-secondary);
+}
+
+/* ── 2단·3단 배치 ─────────────────────────────────────────── */
+
+.rw-cols {
+  display: grid;
+  gap: var(--rw-space-6);
+  align-items: start;
+}
+
+.rw-cols--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.rw-cols--detail {
+  grid-template-columns: minmax(0, 1.6fr) minmax(320px, 1fr);
+}
+
+.rw-cols--map {
+  grid-template-columns: minmax(240px, 300px) minmax(0, 1fr) minmax(300px, 360px);
+}
+
+.rw-cols--form {
+  grid-template-columns: minmax(0, 1.5fr) minmax(340px, 1fr);
+}
+
+@media (max-width: 1180px) {
+  .rw-cols--2,
+  .rw-cols--detail,
+  .rw-cols--map,
+  .rw-cols--form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ── 정의 목록 (속성 나열) ────────────────────────────────── */
+
+.rw-dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--rw-space-3) var(--rw-space-6);
+  font-size: var(--rw-size-aux);
+}
+
+.rw-dl dt {
+  color: var(--rw-text-secondary);
+  white-space: nowrap;
+}
+
+.rw-dl dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}

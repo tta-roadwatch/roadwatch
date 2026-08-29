@@ -310,3 +310,77 @@ def test_report_percentages_match_documents(client, monkeypatch):
     facts = client.post("/api/cells/21:4/report").json()["facts"]
     assert "81.3%" in facts
     assert "81.2%" not in facts
+
+
+# ── 지도 레이어 (SCR-05) ──────────────────────────────────────────────
+
+def test_cell_polygons_are_40m(client):
+    """화면이 격자 규약을 몰라도 셀을 그릴 수 있어야 한다.
+
+    중심점만 주면 프론트가 DLAT/DLON/LAT0/LON0 을 알아야 하는데, 그건
+    캘리브레이션으로 정한 분석 규약이지 화면이 알 일이 아니다.
+    """
+    import math
+
+    gj = client.get("/api/geo/cells").json()
+    assert gj["type"] == "FeatureCollection"
+    assert len(gj["features"]) == 89
+
+    f = gj["features"][0]
+    assert f["geometry"]["type"] == "Polygon"
+    ring = f["geometry"]["coordinates"][0]
+    assert ring[0] == ring[-1], "폴리곤 링은 닫혀야 한다"
+
+    (w, s), (e, n) = ring[0], ring[2]
+    height = (n - s) * 111_320
+    width = (e - w) * 111_320 * math.cos(math.radians(s))
+    assert 38 < width < 42, f"셀 가로가 40m 가 아니다: {width:.1f}m"
+    assert 38 < height < 42, f"셀 세로가 40m 가 아니다: {height:.1f}m"
+
+
+def test_roadlinks_served_for_map(client):
+    """도로망은 저장소에 있지만 Vite 가 frontend/ 밖을 서빙하지 않는다.
+
+    파일을 복사하면 같은 데이터가 두 벌이 되므로 API 가 낸다.
+    """
+    gj = client.get("/api/geo/roadlinks").json()
+    assert gj["type"] == "FeatureCollection"
+    assert len(gj["features"]) == 1087
+    assert gj["features"][0]["geometry"]["type"] == "LineString"
+
+    named = client.get("/api/geo/roadlinks", params={"named_only": True}).json()
+    assert 0 < len(named["features"]) < len(gj["features"])
+
+
+def test_bounds_cover_all_cells(client):
+    """지도 초기 뷰포트가 셀을 다 담아야 한다."""
+    b = client.get("/api/geo/bounds").json()
+    w, s, e, n = b["bbox"]
+    for f in client.get("/api/geo/cells").json()["features"]:
+        lon, lat = f["properties"]["center"]
+        assert w <= lon <= e and s <= lat <= n
+
+
+# ── 표준 적용 현황 (SCR-09) ───────────────────────────────────────────
+
+def test_standards_distinguish_implemented_from_referenced(client):
+    """표준 적용을 과장하지 않는다 — 구현과 인용을 구분해야 한다."""
+    d = client.get("/api/standards").json()
+    by_id = {s["id"]: s for s in d["standards"]}
+
+    assert by_id["TTAK.KO-10.1331-Part3"]["status"] == "implemented"
+    assert by_id["TTAK.KO-10.1398"]["status"] == "implemented"
+    # 0580 은 BSM 파싱까지다. 메시지 규격 구현은 없다.
+    assert by_id["TTAK.KO-06.0580"]["status"] == "partial"
+    # Part2 는 설계 근거일 뿐 코드 산출물이 없다.
+    assert by_id["TTAK.KO-10.1331-Part2"]["status"] == "reference"
+
+
+def test_standards_evidence_paths_actually_work(client):
+    """근거로 제시한 경로가 실제로 응답해야 한다.
+
+    화면에서 눌렀을 때 404 가 뜨면 표준 준수 주장이 오히려 역효과다.
+    """
+    for s in client.get("/api/standards").json()["standards"]:
+        if s["evidence"]:
+            assert client.get(s["evidence"]).status_code == 200, s["id"]

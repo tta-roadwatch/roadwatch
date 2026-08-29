@@ -1,0 +1,109 @@
+/* KRDS 원시 토큰 위에 얹는 얇은 시맨틱 레이어.
+ *
+ * 화면 코드는 여기 정의된 --rw-* 만 참조한다. krds_tokens.css 는 생성 파일이라
+ * 수정하지 않고, 색을 직접 쓰는 일도 없다. 색을 바꿔야 하면 이 파일 한 곳만
+ * 고치면 되고, 화면에 리터럴 색이 새로 생기면 리뷰에서 바로 눈에 띈다.
+ *
+ * 간격은 4의 배수, radius 는 2~12 로 제한한다.
+ */
+
+:root {
+  /* ── 표면 · 경계 ───────────────────────────────────────────── */
+  --rw-bg: var(--krds-color-light-gray-5);
+  --rw-surface: var(--krds-color-light-gray-0);
+  --rw-surface-sunken: var(--krds-color-light-gray-5);
+  --rw-border: var(--krds-color-light-gray-20);
+  --rw-border-strong: var(--krds-color-light-gray-30);
+  /* 폼 컨트롤 경계는 Gray 60. WCAG 1.4.11 의 3:1 을 충족해야 한다. */
+  --rw-border-control: var(--krds-color-light-gray-60);
+
+  /* ── 글자 ─────────────────────────────────────────────────── */
+  --rw-text: var(--krds-color-light-gray-90);
+  --rw-text-secondary: var(--krds-color-light-gray-70);
+  --rw-text-muted: var(--krds-color-light-gray-50);
+  --rw-text-on-fill: var(--krds-color-light-gray-0);
+
+  /* ── 주조색 ───────────────────────────────────────────────── */
+  --rw-primary: var(--krds-color-light-primary-50);
+  --rw-primary-hover: var(--krds-color-light-primary-60);
+  --rw-primary-weak: var(--krds-color-light-primary-5);
+  --rw-primary-text: var(--krds-color-light-primary-60);
+  --rw-focus: var(--krds-color-light-primary-50);
+
+  /* ── 3단계 분류 ───────────────────────────────────────────────
+   * intermittent → warning · always_manual → gray · low → success.
+   * danger 는 쓰지 않는다. 이 서비스는 원인을 단정하지 않으므로
+   * "주의"는 말하되 "위험"은 말하지 않는다 — 의도된 선택이다.
+   */
+  --rw-intermittent: var(--krds-color-light-warning-30);
+  --rw-intermittent-weak: var(--krds-color-light-warning-5);
+  --rw-intermittent-text: var(--krds-color-light-warning-50);
+  --rw-intermittent-border: var(--krds-color-light-warning-20);
+
+  --rw-manual: var(--krds-color-light-gray-60);
+  --rw-manual-weak: var(--krds-color-light-gray-5);
+  --rw-manual-text: var(--krds-color-light-gray-70);
+  --rw-manual-border: var(--krds-color-light-gray-20);
+
+  --rw-low: var(--krds-color-light-success-50);
+  --rw-low-weak: var(--krds-color-light-success-5);
+  --rw-low-text: var(--krds-color-light-success-60);
+  --rw-low-border: var(--krds-color-light-success-20);
+
+  /* 판정 없음 — 분류가 붙지 않은 격자 */
+  --rw-unranked: var(--krds-color-light-gray-30);
+  --rw-unranked-weak: var(--krds-color-light-gray-5);
+  --rw-unranked-text: var(--krds-color-light-gray-60);
+  --rw-unranked-border: var(--krds-color-light-gray-20);
+
+  /* ── 알림 심각도 ──────────────────────────────────────────────
+   * 배너는 KRDS critical_alerts 패턴을 따른다: 배경은 항상 흰색이고
+   * 색은 좌측 배지에만 쓴다. 배경을 채우거나 본문을 물들이지 않는다.
+   */
+  --rw-alert-info: var(--krds-color-light-primary-50);
+  --rw-alert-caution: var(--krds-color-light-warning-40);
+  --rw-alert-done: var(--krds-color-light-success-50);
+
+  /* 시뮬레이션 표기 — 실측이 아님을 알리는 중립 강조 */
+  --rw-sim-weak: var(--krds-color-light-information-5);
+  --rw-sim-text: var(--krds-color-light-information-70);
+  --rw-sim-border: var(--krds-color-light-information-20);
+
+  /* ── 서체 ─────────────────────────────────────────────────────
+   * Pretendard GOV 는 Regular(400)·Bold(700) 2종만 쓴다.
+   */
+  --rw-font: "Pretendard GOV", "Pretendard", -apple-system, BlinkMacSystemFont,
+    "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --rw-font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+
+  --rw-size-page-title: 32px;
+  --rw-size-card-title: 19px;
+  --rw-size-body: 17px;
+  --rw-size-aux: 15px;
+
+  --rw-weight-regular: 400;
+  --rw-weight-bold: 700;
+
+  /* ── 간격 (4의 배수) ──────────────────────────────────────── */
+  --rw-space-1: 4px;
+  --rw-space-2: 8px;
+  --rw-space-3: 12px;
+  --rw-space-4: 16px;
+  --rw-space-5: 20px;
+  --rw-space-6: 24px;
+  --rw-space-8: 32px;
+  --rw-space-10: 40px;
+  --rw-space-12: 48px;
+
+  /* ── 모서리 (2~12) ────────────────────────────────────────── */
+  --rw-radius-sm: 2px;
+  --rw-radius-md: 4px;
+  --rw-radius-lg: 8px;
+  --rw-radius-xl: 12px;
+
+  /* ── 그림자 ───────────────────────────────────────────────── */
+  --rw-shadow-card: 0 1px 2px rgba(30, 33, 36, 0.06);
+  --rw-shadow-alert: 0 2px 8px rgba(30, 33, 36, 0.08);
+
+  --rw-max-width: 1360px;
+}
