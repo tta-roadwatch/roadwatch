@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
-import { NavLink, Link } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
+
+import { useAuth } from "../auth/AuthContext";
 
 /** 상단 메뉴. 목업의 5개 대분류를 그대로 따른다. */
 const MENU = [
@@ -11,6 +13,9 @@ const MENU = [
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
   return (
     <div className="rw-shell">
       <header className="rw-gnb">
@@ -30,11 +35,31 @@ export function AppShell({ children }: { children: ReactNode }) {
             ))}
           </nav>
 
+          {/* 조회는 로그인 없이 열려 있다. 로그인은 현장점검 등록 권한이므로
+              로그인하지 않은 상태도 정상 상태로 다룬다. */}
           <div className="rw-gnb__side">
-            <span className="rw-aux">경기도자율주행센터</span>
-            <Link to="/login" className="rw-btn rw-btn--secondary rw-btn--sm">
-              로그아웃
-            </Link>
+            <span className="rw-aux">
+              {user
+                ? `${user.display_name ?? user.username} · ${user.organization ?? ""}`
+                : "로그인하지 않음 · 조회만 가능"}
+            </span>
+            {user ? (
+              <button
+                type="button"
+                className="rw-btn rw-btn--secondary rw-btn--sm"
+                onClick={logout}
+              >
+                로그아웃
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="rw-btn rw-btn--secondary rw-btn--sm"
+                onClick={() => navigate("/login")}
+              >
+                로그인
+              </button>
+            )}
           </div>
         </div>
       </header>

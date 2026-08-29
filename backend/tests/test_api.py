@@ -45,6 +45,19 @@ def restores_db():
 
 
 @pytest.fixture(scope="module")
+def token(client):
+    """테스트 로그인으로 발급받은 토큰. 쓰기 경로에 붙인다."""
+    r = client.post("/api/auth/demo-login")
+    assert r.status_code == 200, r.text
+    return r.json()["access_token"]
+
+
+@pytest.fixture
+def auth_headers(token):
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture(scope="module")
 def client():
     from app.main import app
     from pipeline import db
@@ -242,7 +255,8 @@ def test_comparison_marks_after_as_simulated(client):
 
 # ── 점검 (유일한 쓰기 경로) ───────────────────────────────────────────
 
-def test_inspection_lifecycle_and_false_positive_override(client, restores_db):
+def test_inspection_lifecycle_and_false_positive_override(client, restores_db,
+                                                        auth_headers):
     """사람이 시스템 판정을 뒤집을 수 있어야 한다.
 
     '상시 수동 운행 구간(도로 문제 아님)' 을 고르면 후보에서 내려간다.
@@ -254,16 +268,15 @@ def test_inspection_lifecycle_and_false_positive_override(client, restores_db):
     cells = client.get("/api/cells", params={"candidates_only": True}).json()
     target = cells[-1]["cell_key"]
 
-    created = client.post("/api/inspections", json={
-        "cell_key": target, "findings": ["차선 마모"],
-        "action": "재도색 요청", "inspector": "테스트",
+    created = client.post("/api/inspections", headers=auth_headers, json={
+        "cell_key": target, "findings": ["차선 마모"], "action": "재도색 요청",
     })
     assert created.status_code == 201
     iid = created.json()["id"]
     assert created.json()["status"] == "inspecting"
 
     # 오탐으로 번복
-    upd = client.patch(f"/api/inspections/{iid}", json={
+    upd = client.patch(f"/api/inspections/{iid}", headers=auth_headers, json={
         "findings": [NOT_A_ROAD_ISSUE], "status": "not_applicable"})
     assert upd.status_code == 200
 
@@ -273,8 +286,8 @@ def test_inspection_lifecycle_and_false_positive_override(client, restores_db):
     assert after["classification"] is not None
 
 
-def test_inspection_rejects_unknown_finding(client):
-    r = client.post("/api/inspections",
+def test_inspection_rejects_unknown_finding(client, auth_headers):
+    r = client.post("/api/inspections", headers=auth_headers,
                     json={"cell_key": "21:4", "findings": ["없는항목"]})
     assert r.status_code == 400
     assert r.json()["type"].endswith("BadRequestData")
@@ -384,3 +397,118 @@ def test_standards_evidence_paths_actually_work(client):
     for s in client.get("/api/standards").json()["standards"]:
         if s["evidence"]:
             assert client.get(s["evidence"]).status_code == 200, s["id"]
+
+
+# ── 인증 ──────────────────────────────────────────────────────────────
+
+def test_reads_stay_open_without_auth(client):
+    """조회는 공개 데이터다. 인증을 걸면 표준 준수를 확인할 방법도 함께 막힌다."""
+    for path in ("/api/dashboard", "/api/cells", "/api/geo/cells",
+                 "/api/inspections", "/api/standards",
+                 "/ngsi-ld/v1/entities?type=TrafficEvent&limit=1",
+                 "/ngsi-ld/v1/datasets"):
+        assert client.get(path).status_code == 200, path
+
+
+def test_write_requires_auth(client):
+    """현장점검 등록은 시스템 판정을 사람이 번복하는 지점이라 신원이 남아야 한다."""
+    r = client.post("/api/inspections",
+                    json={"cell_key": "21:4", "findings": ["차선 마모"]})
+    assert r.status_code == 401
+    assert r.json()["status"] == 401
+
+    r = client.patch("/api/inspections/1", json={"status": "resolved"})
+    assert r.status_code == 401
+
+
+def test_demo_login_issues_real_token(client):
+    """테스트 로그인은 인증 우회가 아니라 데모 계정의 정상 발급이다."""
+    b = client.post("/api/auth/demo-login").json()
+    assert b["token_type"] == "Bearer"
+    assert b["user"]["is_demo"] is True
+    assert b["user"]["role"] == "inspector", "데모라고 권한을 더 주지 않는다"
+
+    me = client.get("/api/auth/me",
+                    headers={"Authorization": f"Bearer {b['access_token']}"})
+    assert me.status_code == 200
+    assert me.json()["username"] == "demo"
+
+
+def test_login_with_credentials(client):
+    r = client.post("/api/auth/login",
+                    json={"username": "admin", "password": "roadwatch2026!"})
+    assert r.status_code == 200
+    assert r.json()["user"]["role"] == "admin"
+
+
+@pytest.mark.parametrize("body", [
+    {"username": "admin", "password": "wrong"},
+    {"username": "nobody", "password": "roadwatch2026!"},
+])
+def test_login_failures_do_not_leak_account_existence(client, body):
+    """계정 존재 여부가 새어나가면 그 자체가 정보다 — 두 경우의 응답이 같아야 한다."""
+    r = client.post("/api/auth/login", json=body)
+    assert r.status_code == 401
+    assert r.json()["detail"] == "아이디 또는 비밀번호가 올바르지 않습니다."
+
+
+def test_bad_token_rejected(client):
+    for header in ("Bearer not-a-token", "Basic abc", "Bearer "):
+        r = client.post("/api/inspections", headers={"Authorization": header},
+                        json={"cell_key": "21:4", "findings": ["차선 마모"]})
+        assert r.status_code == 401, header
+
+
+def test_inspector_comes_from_token_not_client(client, restores_db, auth_headers):
+    """클라이언트가 아무 이름이나 적게 두면 기록으로서 의미가 없다."""
+    r = client.post("/api/inspections", headers=auth_headers, json={
+        "cell_key": "21:4", "findings": ["노면 상태"],
+        "inspector": "위조된이름",          # 무시돼야 한다
+    })
+    assert r.status_code == 201
+    assert r.json()["inspector"] == "데모 사용자"
+
+
+def test_password_hashing_roundtrip():
+    """저장된 해시로 원문을 되돌릴 수 없고, 같은 비밀번호도 매번 다른 해시가 된다."""
+    from app.auth import hash_password, verify_password
+
+    h1 = hash_password("roadwatch2026")
+    h2 = hash_password("roadwatch2026")
+    assert h1 != h2, "salt 가 매번 달라야 한다"
+    assert "roadwatch2026" not in h1
+    assert verify_password("roadwatch2026", h1)
+    assert not verify_password("roadwatch2027", h1)
+    assert not verify_password("roadwatch2026", "깨진해시")
+
+
+def test_auth_config_discloses_dev_secret(client):
+    """개발 기본 비밀키를 쓰는 중이면 숨기지 않는다.
+
+    이 값이면 토큰을 누구나 위조할 수 있다 — 공개 저장소에 있는 값이기 때문이다.
+    """
+    c = client.get("/api/auth/config").json()
+    assert c["demo_login_available"] is True
+    assert "dev_secret_in_use" in c
+
+
+def test_empty_jwt_secret_env_falls_back(monkeypatch):
+    """`JWT_SECRET=` 로 배포되는 .env.example 을 그대로 쓰면 빈 키가 된다.
+
+    os.environ.get 의 기본값은 '키 없음'에만 걸리고 '빈 값'에는 안 걸리므로,
+    빈 문자열을 미설정으로 취급해야 한다. 안 그러면 예제 파일을 복사한
+    사람의 로그인이 통째로 깨진다.
+    """
+    import importlib
+
+    from app import auth as auth_mod
+
+    monkeypatch.setenv("JWT_SECRET", "")
+    reloaded = importlib.reload(auth_mod)
+    try:
+        assert reloaded.SECRET == reloaded.DEV_SECRET
+        token, _ = reloaded.issue_token({"username": "demo"})
+        assert reloaded.decode_token(token)["sub"] == "demo"
+    finally:
+        monkeypatch.delenv("JWT_SECRET", raising=False)
+        importlib.reload(auth_mod)

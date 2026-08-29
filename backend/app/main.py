@@ -19,8 +19,8 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from . import deps, errors
-from .routers import (datasets, entities, geo, inspections, report,
+from . import auth as auth_mod, deps, errors
+from .routers import (auth, datasets, entities, geo, inspections, report,
                       screens, standards)
 
 DESCRIPTION = """
@@ -38,6 +38,7 @@ DESCRIPTION = """
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     deps.pool()          # 기동 시 커넥션 풀을 미리 연다
+    auth_mod.ensure_seed_users()
     yield
     deps.close()
 
@@ -57,7 +58,7 @@ app.add_middleware(
 
 for r in (entities.router, datasets.router, screens.router,
           inspections.router, report.router, geo.router,
-          standards.router):
+          standards.router, auth.router):
     app.include_router(r)
 
 
@@ -106,6 +107,8 @@ def root():
             "TTAK.KO-06.0580": "V2N 정보 연계 — BSM 입력",
             "TTAK.KO-10.1331-Part2": "참조구조",
         },
+        "auth": ("조회는 인증 없이 열려 있습니다. 현장점검 등록만 로그인이 "
+                 "필요합니다 — POST /api/auth/login"),
         "docs": "/docs",
     }
 

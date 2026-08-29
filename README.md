@@ -18,7 +18,7 @@
 |---|---|
 | 분석 파이프라인 (①적재 → ⑧도로명 매핑) | **완료 · 검증됨** — 인수 19항목 통과 |
 | 데이터베이스 스키마 · 시드 | **완료** — 원본 없이 기동 가능 |
-| 조회 API (`backend/app/`) | **완료** — NGSI-LD · Part3 인터페이스 · 계약 테스트 23항목 |
+| 조회 API (`backend/app/`) | **완료** — NGSI-LD · Part3 인터페이스 · 인증 · 계약 테스트 39항목 |
 | 화면 (`frontend/`) | 작업 중 — KRDS 디자인 토큰 적용 |
 
 **`docker compose up` 으로 `db` 와 `api` 가 뜹니다.** API 문서는
@@ -136,10 +136,41 @@ $ make verify
 | `GET /ngsi-ld/v1/datasets` | 데이터세트 메타데이터 8건 |
 | `GET /ngsi-ld/v1/context.jsonld` | 확장 컨텍스트 |
 | `GET /api/dashboard` · `/api/cells` · `/api/cells/{key}` | 화면용 집계 |
-| `POST /api/inspections` | 현장점검 등록 — 유일한 쓰기 경로 |
+| `GET /api/geo/cells` · `/api/geo/roadlinks` | 지도 레이어 (GeoJSON) |
+| `POST /api/auth/login` · `/api/auth/demo-login` | 로그인 |
+| `POST /api/inspections` | 현장점검 등록 — 유일한 쓰기 경로 (인증 필요) |
 | `POST /api/cells/{key}/report` | AI 점검 리포트 초안 |
 
 전체 목록은 <http://localhost:8000/docs> 에 있습니다.
+
+### 인증
+
+**조회는 인증 없이 열려 있고, 현장점검 등록만 로그인이 필요합니다.**
+
+다루는 데이터가 전부 무료 개방데이터이므로 도로가 어디서 어려운지는 누구나 볼 수
+있어야 합니다. 반대로 현장점검 등록은 시스템 판정을 사람이 확정하거나 번복하는
+지점이라, 누가 뒤집었는지가 기록으로 남아야 의미가 있습니다. 그래서 `inspector`
+필드는 요청 본문이 아니라 **토큰에서 채웁니다.**
+
+```bash
+TOKEN=$(curl -s -X POST localhost:8000/api/auth/demo-login | jq -r .access_token)
+curl -X POST localhost:8000/api/inspections \
+  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
+  -d '{"cell_key":"21:4","findings":["차선 마모"],"action":"재도색 요청"}'
+```
+
+| 계정 | 비밀번호 | 용도 |
+|---|---|---|
+| `demo` | `roadwatch2026` | 화면의 `테스트 로그인` 버튼 |
+| `admin` | `roadwatch2026!` | 관리자 |
+
+`테스트 로그인`은 인증을 건너뛰는 게 아니라 데모 계정으로 정상 발급받습니다.
+권한도 일반 사용자와 같습니다.
+
+비밀번호는 PBKDF2-HMAC-SHA256(20만 회)으로 해싱하고, 토큰은 JWT(HS256)입니다.
+`JWT_SECRET` 을 설정하지 않으면 공개된 개발용 기본값을 쓰며,
+`GET /api/auth/config` 가 그 사실을 숨기지 않고 알려줍니다. **운영 배포 시에는
+반드시 바꿔야 합니다.**
 
 ---
 
@@ -159,11 +190,13 @@ backend/
 │   ├── repeat.py           ⑦ 반복성 3단계 분류
 │   ├── nodelink.py         ⑧ 도로명 매핑
 │   └── run.py              CLI · 인수검증 · 시드덤프
-├── tests/                  인수 기준 19항목 + API 계약 23항목
+├── tests/                  인수 기준 19항목 + API 계약 39항목
 └── app/                    조회 API
     ├── ngsild.py           NGSI-LD 정규 표현법 직렬화
     ├── errors.py           Part3 5장 응답 코드 체계
-    └── routers/            entities · datasets · screens · inspections · report
+    ├── auth.py             로그인 · 토큰 · 비밀번호 해싱
+    └── routers/            entities · datasets · screens · geo ·
+                            inspections · report · standards · auth
 
 data/nodelink/              ITS 전국표준노드링크 판교 추출본 1,087링크
 docs/thresholds.md          임계값 결정 기록 A~G — 왜 그 숫자인지

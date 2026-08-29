@@ -120,3 +120,19 @@ CREATE TABLE inspections (
 );
 CREATE INDEX ON inspections (cell_key);
 CREATE INDEX ON inspections (status);
+
+-- 사용자 : 도로관리 담당자.
+-- 조회는 공개 데이터라 인증 없이 열어두고, 현장점검 등록(쓰기)에만 인증을 건다.
+-- 실제 운영이라면 지자체 SSO 와 연동할 자리다.
+CREATE TABLE users (
+    id            BIGSERIAL PRIMARY KEY,
+    username      TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,             -- PBKDF2-HMAC-SHA256 (salt 포함)
+    display_name  TEXT,
+    organization  TEXT,
+    role          TEXT NOT NULL DEFAULT 'inspector',  -- inspector | admin
+    is_demo       BOOLEAN NOT NULL DEFAULT FALSE,     -- 테스트 로그인 대상 계정
+    created_at    TIMESTAMPTZ DEFAULT now(),
+    last_login_at TIMESTAMPTZ
+);
+CREATE INDEX ON users (username);

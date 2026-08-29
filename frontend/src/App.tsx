@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
+import { AuthProvider } from "./auth/AuthContext";
 import { AppShell } from "./components/AppShell";
 import { Dashboard } from "./pages/Dashboard";
 import { Datasets } from "./pages/Datasets";
@@ -15,7 +16,8 @@ import { Login } from "./pages/Login";
 export function App() {
   return (
     <BrowserRouter>
-      <Routes>
+      <AuthProvider>
+        <Routes>
         {/* 로그인은 상단 메뉴 없이 단독으로 뜬다 */}
         <Route path="/login" element={<Login />} />
 
@@ -41,7 +43,8 @@ export function App() {
             </AppShell>
           }
         />
-      </Routes>
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

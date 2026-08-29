@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
-from .. import errors
+from .. import auth, errors
 from ..deps import cursor
 
 router = APIRouter(prefix="/api", tags=["화면"])
@@ -35,14 +35,14 @@ class InspectionCreate(BaseModel):
     cell_key: str
     findings: list[str] = Field(default_factory=list)
     action: str | None = None
-    inspector: str | None = None
     status: str = "inspecting"
+    # inspector 는 받지 않는다. 누가 판정을 뒤집었는지는 토큰에서 채워야
+    # 기록으로서 의미가 있다 — 클라이언트가 아무 이름이나 적게 두면 안 된다.
 
 
 class InspectionUpdate(BaseModel):
     findings: list[str] | None = None
     action: str | None = None
-    inspector: str | None = None
     status: str | None = None
 
 
@@ -93,7 +93,7 @@ def list_inspections(status: str | None = None, cell_key: str | None = None):
 
 
 @router.post("/inspections", summary="점검 등록", status_code=201)
-def create_inspection(body: InspectionCreate):
+def create_inspection(body: InspectionCreate, user: dict = auth.RequireUser):
     if body.status not in STATUSES:
         raise errors.bad_request(f"알 수 없는 상태입니다: {body.status}")
     bad = [f for f in body.findings if f not in FINDINGS]
@@ -108,7 +108,8 @@ def create_inspection(body: InspectionCreate):
             """insert into inspections (cell_key, status, findings, action, inspector,
                                         inspected_at)
                values (%s,%s,%s,%s,%s,%s) returning id""",
-            (body.cell_key, body.status, body.findings, body.action, body.inspector,
+            (body.cell_key, body.status, body.findings, body.action,
+             user["display_name"] or user["username"],
              datetime.now(timezone.utc) if body.status != "recommended" else None),
         )
         new_id = cur.fetchone()["id"]
@@ -118,21 +119,23 @@ def create_inspection(body: InspectionCreate):
 
 
 @router.patch("/inspections/{inspection_id}", summary="점검 상태 변경")
-def update_inspection(inspection_id: int, body: InspectionUpdate):
+def update_inspection(inspection_id: int, body: InspectionUpdate,
+                      user: dict = auth.RequireUser):
     if body.status is not None and body.status not in STATUSES:
         raise errors.bad_request(f"알 수 없는 상태입니다: {body.status}")
 
     sets, params = [], []
     for col, val in (("status", body.status), ("action", body.action),
-                     ("inspector", body.inspector), ("findings", body.findings)):
+                     ("findings", body.findings)):
         if val is not None:
             sets.append(f"{col} = %s")
             params.append(val)
     if not sets:
         raise errors.bad_request("변경할 항목이 없습니다")
-    sets.append("inspected_at = %s")
-    params.append(datetime.now(timezone.utc))
-    params.append(inspection_id)
+    # 손댄 사람과 시각은 항상 갱신한다. 누가 뒤집었는지가 기록의 핵심이다.
+    sets += ["inspector = %s", "inspected_at = %s"]
+    params += [user["display_name"] or user["username"], datetime.now(timezone.utc),
+               inspection_id]
 
     with cursor(commit=True) as cur:
         cur.execute(

@@ -1,6 +1,8 @@
 /** API 호출. 오류 형식과 cell_key 인코딩을 여기서 한 번만 처리한다. */
 
 import type {
+  AuthConfig,
+  AuthUser,
   Cell,
   CellFeatureCollection,
   CellDetail,
@@ -11,6 +13,7 @@ import type {
   Inspection,
   InspectionCreate,
   InspectionStatus,
+  LoginResponse,
   MapBounds,
   Normalization,
   Quality,
@@ -23,6 +26,24 @@ const BASE = (import.meta.env.VITE_API_BASE || "http://localhost:8000").replace(
   /\/+$/,
   "",
 );
+
+/** 쓰기 경로에 붙일 토큰. 조회는 인증 없이 열려 있어 토큰이 없어도 동작한다.
+ *
+ * 모듈 변수로 두는 이유는 client 가 auth 를 import 하면 순환 참조가 되기
+ * 때문이다. 인증 상태를 가진 쪽이 여기에 밀어 넣는다.
+ */
+let authToken: string | null = null;
+
+export function setAuthToken(token: string | null): void {
+  authToken = token;
+}
+
+/** 토큰이 만료·무효일 때 로그아웃시키기 위한 통로 */
+let onUnauthorized: (() => void) | null = null;
+
+export function setUnauthorizedHandler(fn: (() => void) | null): void {
+  onUnauthorized = fn;
+}
 
 export class ApiError extends Error {
   status: number;
@@ -38,8 +59,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let res: Response;
   try {
     res = await fetch(`${BASE}${path}`, {
-      headers: { "Content-Type": "application/json" },
       ...init,
+      headers: {
+        "Content-Type": "application/json",
+        ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+        ...(init?.headers ?? {}),
+      },
     });
   } catch {
     // 네트워크 자체가 실패한 경우 — API 컨테이너가 아직 안 떴을 수 있다
@@ -47,6 +72,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   }
 
   if (!res.ok) {
+    // 토큰이 만료됐거나 틀린 경우. 로그인 상태를 정리해 다시 로그인하게 한다.
+    if (res.status === 401) onUnauthorized?.();
+
     // 오류 응답은 Part3 5장 형식(application/problem+json)이다
     let detail = `요청이 실패했습니다 (HTTP ${res.status})`;
     try {
@@ -112,6 +140,23 @@ export const api = {
   datasets: () => request<DatasetMeta[]>("/ngsi-ld/v1/datasets"),
 
   standards: () => request<Standards>("/api/standards"),
+
+  // ── 인증 ───────────────────────────────────────────────────
+  // 조회는 열려 있고 현장점검 등록만 로그인이 필요하다.
+
+  login: (username: string, password: string) =>
+    request<LoginResponse>("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ username, password }),
+    }),
+
+  /** 데모 계정으로 정상 발급받는다. 인증을 건너뛰는 우회 경로가 아니다. */
+  demoLogin: () =>
+    request<LoginResponse>("/api/auth/demo-login", { method: "POST" }),
+
+  me: () => request<AuthUser>("/api/auth/me"),
+
+  authConfig: () => request<AuthConfig>("/api/auth/config"),
 
   /** SCR-09 — 표준 준수 근거를 화면에서 눌러 확인할 수 있게 원문 그대로 받는다 */
   raw: (path: string) => request<unknown>(path),

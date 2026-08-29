@@ -325,3 +325,28 @@ export interface MapBounds {
   center: [number, number] | null;
   place_name: string;
 }
+
+// ── 인증 ─────────────────────────────────────────────────────
+
+export interface AuthUser {
+  username: string;
+  display_name: string | null;
+  organization: string | null;
+  role: string;
+  is_demo: boolean;
+}
+
+export interface LoginResponse {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  user: AuthUser;
+}
+
+export interface AuthConfig {
+  /** 데모 계정이 없으면 테스트 로그인 버튼을 띄우지 않는다 */
+  demo_login_available: boolean;
+  demo_username: string | null;
+  dev_secret_in_use: boolean;
+  notice: string;
+}

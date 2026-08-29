@@ -27,6 +27,8 @@ services:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       # NGSI-LD @context 를 절대 URI 로 싣기 위한 자기 주소
       API_BASE_URL: ${API_BASE_URL:-http://localhost:8000}
+      # 토큰 서명 키. 배포 시 반드시 바꾼다 — 기본값은 공개 저장소에 있다.
+      JWT_SECRET: ${JWT_SECRET:-}
     ports: ["8000:8000"]
     volumes:
       - ./data:/data:ro
