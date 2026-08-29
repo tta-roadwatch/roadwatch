@@ -741,3 +741,23 @@
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
+
+/* ── 갈래별 이벤트율 한 줄 (표 안) ────────────────────────── */
+
+.rw-famline {
+  display: flex;
+  align-items: baseline;
+  gap: var(--rw-space-3);
+  white-space: nowrap;
+}
+
+.rw-famline__tag {
+  min-width: 92px;
+  font-size: var(--rw-size-aux);
+  color: var(--rw-text-muted);
+}
+
+.rw-famline__range {
+  font-size: var(--rw-size-aux);
+  color: var(--rw-text-secondary);
+}
