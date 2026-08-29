@@ -23,6 +23,8 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-roadwatch}:${POSTGRES_PASSWORD:-roadwatch}@db:5432/${POSTGRES_DB:-roadwatch}
       DATA_DIR: /data
+      # 없으면 리포트가 템플릿 폴백으로 동작한다
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     ports: ["8000:8000"]
     volumes:
       - ./data:/data:ro
