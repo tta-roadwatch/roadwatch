@@ -114,9 +114,11 @@ table {
   font-variant-numeric: tabular-nums;
 }
 
-/* 표의 수치는 자릿수가 흔들리면 비교가 어려우므로 고정폭 숫자를 쓴다 */
+/* 표의 수치는 자릿수가 흔들리면 비교가 어려우므로 고정폭 숫자를 쓴다.
+   좌표처럼 한 덩어리로 읽어야 하는 값은 줄바꿈도 막는다. */
 .rw-num {
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .rw-bold {
