@@ -18,11 +18,11 @@
 |---|---|
 | 분석 파이프라인 (①적재 → ⑧도로명 매핑) | **완료 · 검증됨** — 인수 19항목 통과 |
 | 데이터베이스 스키마 · 시드 | **완료** — 원본 없이 기동 가능 |
-| 조회 API (`backend/app/`) | 미구현 |
-| 화면 (`frontend/`) | 미구현 — KRDS 디자인 토큰만 있음 |
+| 조회 API (`backend/app/`) | **완료** — NGSI-LD · Part3 인터페이스 · 계약 테스트 23항목 |
+| 화면 (`frontend/`) | 작업 중 — KRDS 디자인 토큰 적용 |
 
-따라서 **`docker compose up` 은 현재 `db` 와 `api` 까지만 뜹니다.** `web` 서비스는
-`frontend/package.json` 이 없어 기동되지 않습니다.
+**`docker compose up` 으로 `db` 와 `api` 가 뜹니다.** API 문서는
+<http://localhost:8000/docs> 입니다. `web` 서비스는 화면 작업이 끝나면 함께 뜹니다.
 
 ---
 
@@ -87,11 +87,59 @@ $ make verify
 
 | 표준 | 적용 |
 |---|---|
-| **TTAK.KO-10.1331-Part4/R1** (데이터 모델) | 스키마가 NGSI-LD 정규 표현법과 `TrafficEvent` 구조를 관계형으로 이식. `quality.py` 의 검증 규칙이 5.3 속성 명세를 근거로 함. **NGSI-LD 직렬화 출력은 아직 없음** |
+| **TTAK.KO-10.1331-Part4/R1** (데이터 모델) | 스키마가 `TrafficEvent` 구조를 관계형으로 이식하고, API 가 **NGSI-LD 정규 표현법으로 직렬화**합니다 (`app/ngsild.py`). 속성마다 `Property`/`GeoProperty`/`Relationship` 을 밝히고 `observedAt` 을 싣습니다 |
 | **세션별 코드체계 정규화** | 구현·검증 완료. 같은 표준 필드인데 세션마다 코드가 반대여서, 정규화 없이는 15,585건이 오판됩니다. 이 프로젝트에서 표준이 결과를 바꾸는 지점 |
+| **TTAK.KO-10.1331-Part3** (인터페이스) | **구현 완료.** 6.1 데이터 인터페이스 · 6.2 데이터셋 인터페이스 · 5장 응답 코드 체계(ProblemDetails). `/ngsi-ld/v1/*` |
+| **TTAK.KO-10.1398** (데이터셋 메타데이터) | **구현 완료.** 8개 주행 세션을 DCAT 기반 데이터세트로 등록. 라벨 연도 불일치·측정 가능 지표 같은 실측 품질 문제를 메타데이터로 드러냅니다 |
 | **TTAK.KO-06.0580** (V2N) | BSM 원본 필드를 실제로 파싱. 메시지 규격 자체의 구현은 없음 |
-| **TTAK.KO-10.1398** (데이터셋 메타데이터) | `sessions` 테이블이 세션 메타를 관리하나, 1398 항목 체계로 매핑하지는 않음 |
-| **TTAK.KO-10.1331-Part3** (인터페이스) | 미구현 — 조회 API 작업 예정 |
+
+### 실제 응답
+
+`GET /ngsi-ld/v1/entities/urn:ngsi-ld:TrafficEvent:roadwatch:21:4`
+
+```json
+{
+  "id": "urn:ngsi-ld:TrafficEvent:roadwatch:21:4",
+  "type": "TrafficEvent",
+  "name":     { "type": "Property", "value": "대왕판교로" },
+  "address":  { "type": "Property", "value": "경기도 성남시 분당구 대왕판교로" },
+  "location": { "type": "GeoProperty",
+                "value": { "type": "Point", "coordinates": [127.1047865, 37.4035015] } },
+  "category":     { "type": "Property", "value": "roadCondition" },
+  "subCategory":  { "type": "Property", "value": "intermittent" },
+  "minEventRate": { "type": "Property", "value": 0.0 },
+  "maxEventRate": { "type": "Property", "value": 1.0 },
+  "sessionCount": { "type": "Property", "value": 6 },
+  "laneCount":    { "type": "Property", "value": 3 },
+  "maximumAllowedSpeed": { "type": "Property", "value": 60, "unitCode": "KMH" },
+  "@context": [
+    "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld",
+    "http://localhost:8000/ngsi-ld/v1/context.jsonld"
+  ]
+}
+```
+
+`severity` 를 싣지 않고 `category` 를 `roadCondition` 으로 고정한 것은 의도한
+선택입니다. 이 서비스는 원인을 단정하지 않으므로 위험도를 매기지 않고 관측된
+이벤트율만 제공합니다. 확정은 도로관리자의 현장점검이 합니다.
+
+단수 `eventRate` 도 쓰지 않습니다. 한 구간이 여러 세션에서 관측되고 분석 갈래마다
+이벤트 정의가 달라, 최댓값 하나를 "이 구간의 이벤트율"이라 부르면 81.3~87.2% 인
+구간이 100% 로 읽힙니다.
+
+주요 경로:
+
+| 경로 | 내용 |
+|---|---|
+| `GET /ngsi-ld/v1/entities?type=TrafficEvent` | 취약구간 (`options=keyValues` 로 축약형) |
+| `GET /ngsi-ld/v1/entities?type=VehicleTraffic` | 세션×격자 관측 — 이벤트율의 근거 |
+| `GET /ngsi-ld/v1/datasets` | 데이터세트 메타데이터 8건 |
+| `GET /ngsi-ld/v1/context.jsonld` | 확장 컨텍스트 |
+| `GET /api/dashboard` · `/api/cells` · `/api/cells/{key}` | 화면용 집계 |
+| `POST /api/inspections` | 현장점검 등록 — 유일한 쓰기 경로 |
+| `POST /api/cells/{key}/report` | AI 점검 리포트 초안 |
+
+전체 목록은 <http://localhost:8000/docs> 에 있습니다.
 
 ---
 
@@ -111,8 +159,11 @@ backend/
 │   ├── repeat.py           ⑦ 반복성 3단계 분류
 │   ├── nodelink.py         ⑧ 도로명 매핑
 │   └── run.py              CLI · 인수검증 · 시드덤프
-├── tests/                  인수 기준 회귀 19항목
-└── app/                    조회 API (예정)
+├── tests/                  인수 기준 19항목 + API 계약 23항목
+└── app/                    조회 API
+    ├── ngsild.py           NGSI-LD 정규 표현법 직렬화
+    ├── errors.py           Part3 5장 응답 코드 체계
+    └── routers/            entities · datasets · screens · inspections · report
 
 data/nodelink/              ITS 전국표준노드링크 판교 추출본 1,087링크
 docs/thresholds.md          임계값 결정 기록 A~G — 왜 그 숫자인지

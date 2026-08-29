@@ -25,6 +25,8 @@ services:
       DATA_DIR: /data
       # 없으면 리포트가 템플릿 폴백으로 동작한다
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      # NGSI-LD @context 를 절대 URI 로 싣기 위한 자기 주소
+      API_BASE_URL: ${API_BASE_URL:-http://localhost:8000}
     ports: ["8000:8000"]
     volumes:
       - ./data:/data:ro

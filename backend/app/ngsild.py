@@ -19,12 +19,23 @@ observed_at→observedAt 매핑이 스키마 주석에 이미 명시돼 있다.
 """
 from __future__ import annotations
 
+import os
 from datetime import date, datetime
+from decimal import ROUND_HALF_UP, Decimal
 from typing import Any
 
 #: ETSI 코어 컨텍스트 + 본 서비스 확장 컨텍스트(API 가 직접 서빙한다)
 CORE_CONTEXT = "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"
 SERVICE_CONTEXT_PATH = "/ngsi-ld/v1/context.jsonld"
+
+#: @context 는 해석 가능한 URI 여야 한다. 상대 경로를 실으면 응답을 받아간
+#: 외부 소비자가 컨텍스트를 못 찾는다 — 표준을 지킨 게 아니라 지킨 척이 된다.
+#: 배포 주소가 다르면 API_BASE_URL 로 바꾼다.
+API_BASE_URL = os.environ.get("API_BASE_URL", "http://localhost:8000").rstrip("/")
+
+
+def service_context_url() -> str:
+    return f"{API_BASE_URL}{SERVICE_CONTEXT_PATH}"
 
 URN_PREFIX = "urn:ngsi-ld"
 PRODUCER = "roadwatch"
@@ -92,7 +103,7 @@ def entity(entity_id: str, entity_type: str, attrs: dict[str, Any],
     out: dict[str, Any] = {"id": entity_id, "type": entity_type}
     out.update({k: v for k, v in attrs.items() if v is not None})
     if context:
-        out["@context"] = [CORE_CONTEXT, SERVICE_CONTEXT_PATH]
+        out["@context"] = [CORE_CONTEXT, service_context_url()]
     return out
 
 
@@ -117,8 +128,11 @@ def traffic_event(row: dict, context: bool = True) -> dict:
             "category": prop("roadCondition"),
             "subCategory": prop(row.get("classification")),
             "description": prop(_describe(row)),
-            "eventRate": prop(_round(row.get("max_event_rate"))),
+            # 단수 eventRate 를 쓰지 않는다. 이 구간은 여러 세션에서 관측됐고
+            # 갈래(BSM·조인)마다 이벤트 정의가 달라, 최댓값 하나를 "이 구간의
+            # 이벤트율"이라 부르면 81.3~87.2% 인 구간이 100% 로 읽힌다.
             "minEventRate": prop(_round(row.get("min_event_rate"))),
+            "maxEventRate": prop(_round(row.get("max_event_rate"))),
             "sessionCount": prop(row.get("session_count")),
             "inspectionRecommended": prop(row.get("is_candidate")),
             "dateObserved": prop(row.get("decided_at")),
@@ -176,7 +190,14 @@ def _describe(row: dict) -> str:
 
 
 def _pct(v: Any) -> str:
-    return f"{v * 100:.1f}%" if isinstance(v, (int, float)) else "-"
+    """백분율 표기. 반올림 규칙은 문서·리포트와 같은 half-up 이다.
+
+    파이썬 기본 포매팅은 half-even 이라 81.25% 를 81.2 로 내리는데, 기획서와
+    README 는 81.3 으로 적혀 있다. 같은 수치가 자리마다 다르게 보이면 안 된다.
+    """
+    if not isinstance(v, (int, float)):
+        return "-"
+    return f"{Decimal(v * 100).quantize(Decimal('0.1'), rounding=ROUND_HALF_UP)}%"
 
 
 # ── 확장 컨텍스트 ─────────────────────────────────────────────────────
@@ -186,6 +207,7 @@ SERVICE_CONTEXT = {
         "roadwatch": "https://roadwatch.example/ngsi-ld/",
         "eventRate": "roadwatch:eventRate",
         "minEventRate": "roadwatch:minEventRate",
+        "maxEventRate": "roadwatch:maxEventRate",
         "observationCount": "roadwatch:observationCount",
         "eventCount": "roadwatch:eventCount",
         "eventTypes": "roadwatch:eventTypes",
