@@ -11,6 +11,20 @@
   color: var(--rw-text);
 }
 
+/* 헤더 앵커(#how 등)로 이동할 때 부드럽게. sticky 헤더 높이만큼 여유를 둬야
+   제목이 헤더 뒤에 숨지 않는다. */
+html:has(.rw-lp) {
+  scroll-behavior: smooth;
+}
+.rw-lp [id] {
+  scroll-margin-top: 96px;
+}
+@media (prefers-reduced-motion: reduce) {
+  html:has(.rw-lp) {
+    scroll-behavior: auto;
+  }
+}
+
 /* ── 공통 ─────────────────────────────────────────────── */
 
 .rw-lp-section {
@@ -573,5 +587,172 @@
   }
   .rw-lp-stats {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ── 제품 미리보기 ────────────────────────────────────── */
+
+.rw-lp-shot {
+  max-width: var(--rw-max-width);
+  margin: 64px auto 0;
+  padding: 0;
+}
+
+.rw-lp-shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--rw-border);
+  border-radius: var(--rw-radius-xl);
+  /* 화면 자체가 밝아서 그림자로 배경과 띄운다 */
+  box-shadow: var(--rw-shadow-card);
+  background: var(--rw-surface);
+}
+
+.rw-lp-shot figcaption {
+  margin-top: 16px;
+  text-align: center;
+  font-size: var(--rw-size-aux);
+  color: var(--rw-text-muted);
+}
+
+/* ── 전·후 비교 ───────────────────────────────────────── */
+
+.rw-lp-compare {
+  max-width: var(--rw-max-width);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.rw-lp-compare figure {
+  margin: 0;
+}
+
+.rw-lp-compare img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--rw-border);
+  border-radius: var(--rw-radius-lg);
+  background: var(--rw-surface);
+}
+
+.rw-lp-compare figcaption {
+  margin-top: 16px;
+  font-size: var(--rw-size-body);
+  line-height: 1.7;
+  color: var(--rw-text-secondary);
+}
+
+.rw-lp-compare__tag {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 4px 10px;
+  border-radius: var(--rw-radius-sm);
+  font-size: 13px;
+  font-weight: var(--rw-weight-bold);
+  background: var(--rw-low-weak);
+  color: var(--rw-low-text);
+}
+
+/* 오판 쪽. danger 를 쓰지 않는 것은 화면 전체와 같은 원칙이다 —
+   위험이 아니라 주의다. */
+.rw-lp-compare__tag--wrong {
+  background: var(--rw-intermittent-weak);
+  color: var(--rw-intermittent-text);
+}
+
+@media (max-width: 1024px) {
+  .rw-lp-compare {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── 스크롤 효과 ──────────────────────────────────────── */
+
+/* 시야에 들어오면 살짝 올라오며 나타난다. 24px 이상 움직이면 "튀어나온다"는
+   느낌이 들어 읽는 흐름을 오히려 방해한다. */
+.rw-reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+.rw-reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* Hero 는 첫 화면이라 스크롤을 기다릴 게 없다. 로드 즉시 한 번 재생한다. */
+.rw-lp-hero__inner--enter > * {
+  animation: rw-lp-enter 0.6s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+.rw-lp-hero__inner--enter > *:nth-child(1) { animation-delay: 0.04s; }
+.rw-lp-hero__inner--enter > *:nth-child(2) { animation-delay: 0.12s; }
+.rw-lp-hero__inner--enter > *:nth-child(3) { animation-delay: 0.2s; }
+.rw-lp-hero__inner--enter > *:nth-child(4) { animation-delay: 0.28s; }
+
+@keyframes rw-lp-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* 카드가 커서를 따라 살짝 뜬다 — 만질 수 있는 물건이라는 신호 */
+.rw-lp-feature,
+.rw-lp-evidence__list li {
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.rw-lp-feature:hover,
+.rw-lp-evidence__list li:hover {
+  transform: translateY(-2px);
+  border-color: var(--rw-border-strong);
+  box-shadow: var(--rw-shadow-card);
+}
+
+.rw-lp-shot img,
+.rw-lp-compare img {
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.rw-lp-compare figure:hover img {
+  transform: scale(1.01);
+}
+
+/* FAQ 답이 펼쳐질 때 스르륵 내려온다. details 는 높이 전환이 안 되므로
+   내용에만 효과를 준다. */
+.rw-lp-faq__item[open] p {
+  animation: rw-lp-enter 0.32s ease backwards;
+}
+
+/* ── 움직임 줄이기 ────────────────────────────────────────
+   전정기관에 민감한 사용자에게 움직임은 어지럼증을 유발한다. 효과를 전부
+   끄되 내용은 그대로 보여야 한다 — 애니메이션이 없다고 화면이 비면 안 된다. */
+@media (prefers-reduced-motion: reduce) {
+  .rw-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .rw-lp-hero__inner--enter > *,
+  .rw-lp-faq__item[open] p {
+    animation: none;
+  }
+  .rw-lp-feature:hover,
+  .rw-lp-evidence__list li:hover,
+  .rw-lp-compare figure:hover img {
+    transform: none;
   }
 }

@@ -4,7 +4,9 @@ import { Link } from "react-router-dom";
 import { api } from "../api/client";
 import { useApi } from "../api/useApi";
 import { Logo } from "../components/Logo";
+import { Reveal } from "../components/Reveal";
 import { num } from "../lib/format";
+import { useCountUp, useInView } from "../lib/reveal";
 
 /** 랜딩 — 로그인 앞 공개 페이지.
  *
@@ -85,7 +87,7 @@ export function Landing() {
 
       {/* ── Hero ── */}
       <section className="rw-lp-hero">
-        <div className="rw-lp-hero__inner">
+        <div className="rw-lp-hero__inner rw-lp-hero__inner--enter">
           <p className="rw-lp-eyebrow">자율주행 데이터 기반 도로환경 분석</p>
           <h1 className="rw-lp-hero__title">
             자율주행차가 반복해서 멈춘 도로,
@@ -108,7 +110,7 @@ export function Landing() {
 
         {/* 제품 미리보기. 스톡 사진 대신 실제 화면을 쓴다 — "이런 서비스입니다"가
             한 번에 읽히고, 동작하는 물건이라는 증거도 된다. */}
-        <figure className="rw-lp-shot">
+        <Reveal as="figure" className="rw-lp-shot">
           <img
             src="/shots/map.png"
             alt="취약도로 지도 화면. 판교 도로망 위에 40m 격자가 분류색으로 표시되고, 세 번의 주행 궤적이 겹쳐 그려져 있다."
@@ -119,24 +121,23 @@ export function Landing() {
           <figcaption>
             실제 화면 — 40m 격자와 서로 다른 세 주행의 궤적을 겹쳐 봅니다
           </figcaption>
-        </figure>
+        </Reveal>
 
-        <dl className="rw-lp-stats">
-          <Stat value={num(s.records)} label="분석한 주행 기록" />
-          <Stat value={`${s.sessions}회`} label="서로 다른 주행 세션" />
-          <Stat value={`${s.candidates}곳`} label="현장점검 권고 구간" highlight />
-          <Stat value="98.8%" label="좌표 유효율" />
-        </dl>
+        <StatBar
+          records={s.records}
+          sessions={s.sessions}
+          candidates={s.candidates}
+        />
       </section>
 
       {/* ── 문제 제기 ── */}
       <section id="problem" className="rw-lp-section">
-        <div className="rw-lp-section__head">
+        <Reveal className="rw-lp-section__head">
           <h2>지워진 차선은 사고가 나야 발견됩니다</h2>
           <p>그런데 자율주행차는 매일 그 길을 지나며 기록을 남기고 있습니다.</p>
-        </div>
+        </Reveal>
 
-        <div className="rw-lp-problem">
+        <Reveal className="rw-lp-problem" delay={80}>
           <div className="rw-lp-problem__now">
             <p className="rw-lp-label">지금</p>
             <ul>
@@ -156,39 +157,44 @@ export function Landing() {
               <li>어디부터 나가볼지 순서를 제안합니다</li>
             </ul>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* ── 작동 방식 ── */}
       <section id="how" className="rw-lp-section rw-lp-section--sunken">
-        <div className="rw-lp-section__head">
+        <Reveal className="rw-lp-section__head">
           <h2>네 단계로 찾아냅니다</h2>
           <p>복잡한 자율주행 AI가 아니라, 표준과 반복성으로 판단합니다.</p>
-        </div>
+        </Reveal>
 
         <div className="rw-lp-features">
-          {FEATURES.map((f) => (
-            <article key={f.step} className="rw-lp-feature">
+          {FEATURES.map((f, i) => (
+            <Reveal
+              as="article"
+              key={f.step}
+              className="rw-lp-feature"
+              delay={(i % 2) * 80}
+            >
               <p className="rw-lp-feature__step">{f.step}</p>
               <h3>{f.title}</h3>
               <p className="rw-lp-feature__body">{f.body}</p>
               <p className="rw-lp-feature__tag">{f.tag}</p>
-            </article>
+            </Reveal>
           ))}
         </div>
       </section>
 
       {/* ── 정규화 전·후 ── */}
       <section className="rw-lp-section">
-        <div className="rw-lp-section__head">
+        <Reveal className="rw-lp-section__head">
           <h2>표준을 지키지 않으면 이렇게 됩니다</h2>
           <p>
             같은 데이터, 같은 지도입니다. 코드 체계를 맞췄는지 아닌지의 차이입니다.
           </p>
-        </div>
+        </Reveal>
 
         <div className="rw-lp-compare">
-          <figure>
+          <Reveal as="figure">
             <img
               src="/shots/norm-before.png"
               alt="정규화 전 지도. 주행 경로 전 구간이 비상정지 표시로 굵게 칠해져 있다."
@@ -203,9 +209,9 @@ export function Landing() {
               주행 전 구간이 «비상정지»로 판정됩니다. 차가 멈춘 적이 없는데도
               15,588건이 이상으로 잡힙니다.
             </figcaption>
-          </figure>
+          </Reveal>
 
-          <figure>
+          <Reveal as="figure" delay={120}>
             <img
               src="/shots/norm-after.png"
               alt="정규화 후 지도. 표시가 세 개만 남아 있다."
@@ -218,19 +224,19 @@ export function Landing() {
               세션별 코드북을 적용하면 실제 센서 이상 3건만 남습니다.
               오판 15,585건이 사라집니다.
             </figcaption>
-          </figure>
+          </Reveal>
         </div>
       </section>
 
       {/* ── 실증 ── */}
       <section id="evidence" className="rw-lp-section">
-        <div className="rw-lp-section__head">
+        <Reveal className="rw-lp-section__head">
           <h2>실제 데이터로 확인했습니다</h2>
           <p>가정이 아니라 공개된 주행 기록을 분석한 결과입니다.</p>
-        </div>
+        </Reveal>
 
         <div className="rw-lp-evidence">
-          <div className="rw-lp-evidence__main">
+          <Reveal className="rw-lp-evidence__main">
             <p className="rw-lp-label">대왕판교로 · 3차로 · 제한속도 60km/h</p>
             <p className="rw-lp-evidence__rates">
               <span>81.3%</span>
@@ -242,9 +248,9 @@ export function Landing() {
               약 3개월 간격의 서로 다른 두 주행에서 같은 격자가 비슷한 비율로
               걸렸습니다. 우연으로 보기 어려운 재현성입니다.
             </p>
-          </div>
+          </Reveal>
 
-          <ul className="rw-lp-evidence__list">
+          <Reveal as="ul" className="rw-lp-evidence__list" delay={120}>
             <li>
               <strong>{num(s.cells)}곳</strong>
               <span>분석한 40m 격자</span>
@@ -261,12 +267,12 @@ export function Landing() {
               <strong>1,087개</strong>
               <span>매핑한 표준 도로망 링크</span>
             </li>
-          </ul>
+          </Reveal>
         </div>
       </section>
 
       {/* ── CTA ── */}
-      <section className="rw-lp-cta">
+      <Reveal as="section" className="rw-lp-cta">
         <h2>오늘 점검할 구간이 {s.candidates}곳 있습니다</h2>
         <p>
           로그인 없이 분석 결과를 둘러볼 수 있습니다. 현장점검 등록만 로그인이
@@ -275,23 +281,51 @@ export function Landing() {
         <Link to="/dashboard" className="rw-lp-btn rw-lp-btn--onfill">
           점검할 구간 보기 <span aria-hidden="true">→</span>
         </Link>
-      </section>
+      </Reveal>
 
       {/* ── FAQ ── */}
       <section id="faq" className="rw-lp-section">
-        <div className="rw-lp-section__head">
+        <Reveal className="rw-lp-section__head">
           <h2>자주 묻는 질문</h2>
           <p>서비스에 대해 궁금하신 점을 확인해 보세요.</p>
-        </div>
-        <div className="rw-lp-faq">
+        </Reveal>
+        <Reveal className="rw-lp-faq">
           {FAQ.map((item, i) => (
             <FaqItem key={item.q} {...item} defaultOpen={i === 0} />
           ))}
-        </div>
+        </Reveal>
       </section>
 
       <LandingFooter />
     </div>
+  );
+}
+
+/** 지표 4개. 시야에 들어오면 숫자가 올라간다.
+ *
+ * 카운트업은 이 묶음이 보일 때 한 번만 돈다 — 카드마다 따로 관찰하면
+ * 숫자들이 제각각 시작해 산만하다. */
+function StatBar({
+  records,
+  sessions,
+  candidates,
+}: {
+  records: number;
+  sessions: number;
+  candidates: number;
+}) {
+  const { ref, inView } = useInView<HTMLDListElement>("-40px");
+  const r = useCountUp(records, inView);
+  const se = useCountUp(sessions, inView, 700);
+  const c = useCountUp(candidates, inView, 900);
+
+  return (
+    <dl ref={ref} className={`rw-lp-stats rw-reveal${inView ? " is-in" : ""}`}>
+      <Stat value={num(r)} label="분석한 주행 기록" />
+      <Stat value={`${se}회`} label="서로 다른 주행 세션" />
+      <Stat value={`${c}곳`} label="현장점검 권고 구간" highlight />
+      <Stat value="98.8%" label="좌표 유효율" />
+    </dl>
   );
 }
 
@@ -307,7 +341,10 @@ function Stat({
   return (
     <div className={`rw-lp-stat${highlight ? " rw-lp-stat--hl" : ""}`}>
       <dt className="rw-lp-stat__label">{label}</dt>
-      <dd className="rw-lp-stat__value">{value}</dd>
+      {/* 숫자가 바뀌는 동안 스크린리더가 매 프레임 읽지 않도록 막는다 */}
+      <dd className="rw-lp-stat__value" aria-live="off">
+        {value}
+      </dd>
     </div>
   );
 }
