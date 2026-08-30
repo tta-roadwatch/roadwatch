@@ -145,7 +145,7 @@ function DatasetRow({
 
       {open && (
         <tr>
-          <td colSpan={6}>
+          <td colSpan={6} className="rw-table__detail">
             <div className="rw-stack-sm">
               <p className="rw-aux">{meta.description}</p>
 

@@ -155,7 +155,7 @@ function CheckRow({
 
       {open && (
         <tr>
-          <td colSpan={4}>
+          <td colSpan={4} className="rw-table__detail">
             <pre className="rw-code" style={{ maxHeight: 340 }}>
               {JSON.stringify(check.detail, null, 2)}
             </pre>
