@@ -29,10 +29,10 @@ export function RoadIllustration() {
       <defs>
         {/* 도로가 화면 밖으로 자연스럽게 빠지도록 양 끝을 흐린다 */}
         <linearGradient id="rw-fade" x1="0" x2="1">
-          <stop offset="0" stopColor="var(--rw-bg)" stopOpacity="1" />
-          <stop offset="0.12" stopColor="var(--rw-bg)" stopOpacity="0" />
-          <stop offset="0.88" stopColor="var(--rw-bg)" stopOpacity="0" />
-          <stop offset="1" stopColor="var(--rw-bg)" stopOpacity="1" />
+          <stop offset="0" stopColor="var(--rw-bg)" stopOpacity="0.9" />
+          <stop offset="0.05" stopColor="var(--rw-bg)" stopOpacity="0" />
+          <stop offset="0.95" stopColor="var(--rw-bg)" stopOpacity="0" />
+          <stop offset="1" stopColor="var(--rw-bg)" stopOpacity="0.9" />
         </linearGradient>
 
         <path
@@ -43,7 +43,7 @@ export function RoadIllustration() {
 
       {/* ── 배경의 옅은 격자 — 40m 격자를 암시한다 ── */}
       <g opacity="0.5">
-        {Array.from({ length: 15 }, (_, i) => (
+        {Array.from({ length: 16 }, (_, i) => (
           <line
             key={`v${i}`}
             x1={i * 80}

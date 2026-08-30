@@ -186,6 +186,12 @@ export function Landing() {
           </div>
         </div>
 
+      </section>
+
+      {/* 통계는 Hero 밖 흰 영역에 둔다. 배경 사진 경계에 걸쳐 있으면
+          사진도 카드도 어중간해 보이고, Hero 안에 다 넣으면 한 화면에
+          여섯 덩어리가 쌓여 답답하다. */}
+      <section className="rw-lp-statband">
         <StatBar
           records={s.records}
           sessions={s.sessions}

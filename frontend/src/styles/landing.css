@@ -28,7 +28,7 @@ html:has(.rw-lp) {
 /* ── 공통 ─────────────────────────────────────────────── */
 
 .rw-lp-section {
-  padding: 96px var(--rw-gutter);
+  padding: clamp(72px, 8vw, 104px) var(--rw-gutter);
 }
 
 .rw-lp-section--sunken {
@@ -186,7 +186,16 @@ html:has(.rw-lp) {
 
 .rw-lp-hero {
   position: relative;
-  padding: 80px var(--rw-gutter) 0;
+  /* 화면 높이에 맞춰 숨 쉴 공간을 준다. 고정 패딩만 두면 노트북에서는
+     빽빽하고 큰 화면에서는 허전하다. 아래를 넉넉히 비워 다음 섹션이
+     첫 화면에 걸치지 않게 한다. */
+  /* 첫 화면을 Hero + 통계로 채운다. 이보다 낮으면 다음 섹션 제목이 화면
+     아래에 반쯤 걸려 잘린 글자만 보인다 — 읽을 수도 없고 거슬린다. */
+  min-height: min(88vh, 820px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(72px, 9vh, 128px) var(--rw-gutter) clamp(72px, 9vh, 120px);
   /* 기본은 옅은 그라데이션. 배경 사진이 있으면 .rw-lp-hero--photo 가 덮는다. */
   background:
     radial-gradient(
@@ -267,8 +276,8 @@ html:has(.rw-lp) {
 }
 
 .rw-lp-hero__title {
-  font-size: 48px;
-  line-height: 1.32;
+  font-size: clamp(32px, 3.4vw, 46px);
+  line-height: 1.34;
   font-weight: var(--rw-weight-bold);
   letter-spacing: -0.02em;
   margin: 0 0 20px;
@@ -291,9 +300,17 @@ html:has(.rw-lp) {
 
 /* ── 지표 ─────────────────────────────────────────────── */
 
+.rw-lp-statband {
+  padding: 0 var(--rw-gutter);
+  /* Hero 와 다음 섹션 사이에 놓인 띠. 위아래 여백으로 둘 다에서 떼어낸다. */
+  margin: -40px 0 8px;
+  position: relative;
+  z-index: 2;
+}
+
 .rw-lp-stats {
   max-width: var(--rw-max-width);
-  margin: 72px auto 0;
+  margin: 0 auto;
   padding: 0;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -306,6 +323,8 @@ html:has(.rw-lp) {
   border-radius: var(--rw-radius-lg);
   padding: 24px;
   text-align: center;
+  /* Hero 아래로 살짝 겹쳐 올라오므로 그림자로 띄운다 */
+  box-shadow: var(--rw-shadow-card);
 }
 
 /* 점검 권고 구간은 이 서비스가 내놓는 결과물이라 강조한다 */
