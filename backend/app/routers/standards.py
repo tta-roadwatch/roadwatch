@@ -22,7 +22,7 @@ STANDARDS = [
         "role": "NGSI-LD 정규 표현법과 TrafficEvent 모델",
         "status": "implemented",
         "evidence": "/ngsi-ld/v1/entities?type=TrafficEvent",
-        "note": "속성마다 Property·GeoProperty·Relationship 을 밝히고 observedAt 을 싣는다.",
+        "note": "속성마다 Property·GeoProperty·Relationship 을 밝히고 observedAt 을 함께 제공합니다.",
     },
     {
         "id": "TTAK.KO-10.1331-Part3",
@@ -30,7 +30,7 @@ STANDARDS = [
         "role": "REST API 명세와 응답 코드 체계",
         "status": "implemented",
         "evidence": "/ngsi-ld/v1/datasets",
-        "note": "6.1 데이터 인터페이스 · 6.2 데이터셋 인터페이스 · 5장 ProblemDetails.",
+        "note": "6.1 데이터 인터페이스, 6.2 데이터셋 인터페이스, 5장 응답 코드 체계를 따릅니다.",
     },
     {
         "id": "TTAK.KO-10.1398",
@@ -38,7 +38,7 @@ STANDARDS = [
         "role": "주행 세션을 데이터세트로 등록",
         "status": "implemented",
         "evidence": "/ngsi-ld/v1/datasets",
-        "note": "DCAT 기반. 라벨 연도 불일치 같은 실측 품질 문제를 메타데이터로 드러낸다.",
+        "note": "DCAT 기반이며, 라벨 연도 불일치 같은 실측 품질 문제도 메타데이터에 담습니다.",
     },
     {
         "id": "TTAK.KO-06.0580",
@@ -46,7 +46,7 @@ STANDARDS = [
         "role": "BSM 입력",
         "status": "partial",
         "evidence": "/api/normalization",
-        "note": "BSM 원본 필드를 실제로 파싱해 적재한다. 메시지 규격의 인코더·디코더는 구현하지 않았다.",
+        "note": "BSM 원본 필드를 파싱해 적재합니다. 메시지 규격의 인코더·디코더는 구현하지 않았습니다.",
     },
     {
         "id": "TTAK.KO-10.1331-Part2",
@@ -54,7 +54,7 @@ STANDARDS = [
         "role": "계층 분리 설계 근거",
         "status": "reference",
         "evidence": None,
-        "note": "수집–정규화–저장–제공 계층 분리의 근거. 직접 대응하는 코드 산출물은 없다.",
+        "note": "수집–정규화–저장–제공 계층 분리의 근거로 삼았습니다. 직접 대응하는 코드 산출물은 없습니다.",
     },
 ]
 
@@ -79,8 +79,11 @@ def standards():
             "partial": sum(1 for s in STANDARDS if s["status"] == "partial"),
             "reference": sum(1 for s in STANDARDS if s["status"] == "reference"),
         },
-        "note": ("표준 적용은 과장하지 않는다. 코드에 실제로 있는 것과 설계 근거로만 "
-                 "참조한 것을 구분해 표기한다."),
+        # 화면에 그대로 노출되는 문장이다. "과장하지 않는다" 같은 개발 원칙은
+        # 팀 내부의 다짐이지 이용자에게 할 말이 아니라, 무엇을 어떻게 표기하는지만
+        # 알린다.
+        "note": "구현 범위와 설계 참조 범위를 구분해 표기합니다.",
         "spatial_note": ("공간 연계는 지정 134선에 대응 표준이 없어 ITS 국가교통정보센터의 "
-                         "전국표준노드링크로 구현했다. TTA 표준이 아니므로 위 표에 넣지 않는다."),
+                         "전국표준노드링크로 구현했습니다. TTA 표준이 아니므로 위 목록에는 "
+                         "포함하지 않았습니다."),
     }
