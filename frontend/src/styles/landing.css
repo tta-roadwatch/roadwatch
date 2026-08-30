@@ -904,7 +904,14 @@ html:has(.rw-lp) {
 .rw-lp-illust {
   display: block;
   width: 100%;
-  height: clamp(220px, 26vw, 320px);
+  /* viewBox 가 4:1 인데 표시 영역이 더 납작하면 preserveAspectRatio="meet" 이
+     높이에 맞춰 축소하면서 좌우에 여백을 만든다. 넓은 창에서 그림이 가운데로
+     몰리고 도로가 격자 밖으로 나가 보이던 원인이다.
+     폭을 묶고 aspect-ratio 로 높이를 따라오게 해 항상 4:1 을 유지한다. */
+  max-width: 1280px;
+  margin: 0 auto;
+  aspect-ratio: 4 / 1;
+  height: auto;
 }
 
 /* 격자 셀이 순서대로 나타난다 — "반복해서 걸렸다"를 시간으로 보인다 */

@@ -41,25 +41,29 @@ export function RoadIllustration() {
         />
       </defs>
 
-      {/* ── 배경의 옅은 격자 — 40m 격자를 암시한다 ── */}
+      {/* ── 배경의 옅은 격자 — 40m 격자를 암시한다 ──
+          도로가 viewBox 밖(-40~1240)까지 그려지므로 격자도 그만큼 넘겨서
+          그린다. viewBox 안쪽만 보이므로 넘친 부분은 잘려 나가고, 화면에
+          보이는 영역은 빈틈없이 격자로 덮인다. 딱 0~1200 만 그리면 도로
+          양 끝이 격자 밖으로 삐져나온 것처럼 보인다. */}
       <g opacity="0.5">
-        {Array.from({ length: 16 }, (_, i) => (
+        {Array.from({ length: 19 }, (_, i) => (
           <line
             key={`v${i}`}
-            x1={i * 80}
-            y1="0"
-            x2={i * 80}
-            y2="300"
+            x1={i * 80 - 80}
+            y1="-20"
+            x2={i * 80 - 80}
+            y2="320"
             stroke="var(--rw-border)"
             strokeWidth="1"
           />
         ))}
-        {Array.from({ length: 5 }, (_, i) => (
+        {Array.from({ length: 6 }, (_, i) => (
           <line
             key={`h${i}`}
-            x1="0"
+            x1="-80"
             y1={i * 75}
-            x2="1200"
+            x2="1280"
             y2={i * 75}
             stroke="var(--rw-border)"
             strokeWidth="1"
