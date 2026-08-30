@@ -52,6 +52,9 @@ class FileReport:
 
     @property
     def count_ok(self) -> bool:
+        # 자동 인식분은 기대 건수를 알 수 없으므로 대조하지 않는다
+        if self.src.expected_count is None:
+            return True
         return self.count == self.src.expected_count
 
 
@@ -195,6 +198,9 @@ def ingest_file(conn: psycopg.Connection, src: S.SourceFile) -> FileReport:
         rep.label_mismatch = label_min.year != lo_dt.year
     if not rep.count_ok:
         rep.warnings.append(f"건수 예상 {src.expected_count:,} → 실측 {rep.count:,}")
+    if src.discovered:
+        rep.warnings.append(
+            f"자동 인식: {src.kind} · 세션 {src.session_id} (표본 {S.DISCOVER_SAMPLE:,}건 기준)")
     # 레지스트리 세션 ID 재검증 : 파일 최소 시각의 날짜와 일치해야 한다
     if lo_dt and lo_dt.date().isoformat() != rep.session_id:
         rep.warnings.append(f"세션 {rep.session_id} ≠ 최소시각 {lo_dt.date()}")
@@ -226,7 +232,8 @@ def run(conn: psycopg.Connection) -> list[FileReport]:
     with conn.cursor() as cur:
         cur.execute("TRUNCATE sessions RESTART IDENTITY CASCADE")
 
-    reports = [ingest_file(conn, src) for src in S.SOURCES]
+    sources = S.all_sources()
+    reports = [ingest_file(conn, src) for src in sources]
 
     # 세션 단위로 묶기
     by_session: dict[str, list[FileReport]] = {}

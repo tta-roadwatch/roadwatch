@@ -85,3 +85,73 @@ def test_codebook_prevents_misjudgement():
     from pipeline.codebook import VERIFIED
     assert VERIFIED["corrected_misjudgements"] == 15_585
     assert VERIFIED["emergency_with_codebook"] == 3
+
+
+# ── 자동 인식 (새 데이터 투입 경로) ───────────────────────────────────
+
+def test_kind_detection_matches_registry():
+    """종류 판별이 등록된 16개 파일 전부와 일치해야 한다.
+
+    새 파일을 종류로 잘못 인식하면 조인 갈래가 통째로 어긋난다. 등록분으로
+    판별기를 검증해두면 새 파일에도 같은 기준이 적용된다.
+    """
+    from pipeline import sources as S
+
+    checked = 0
+    for src in S.SOURCES:
+        path = S.raw_path(src)
+        if not path.exists():
+            continue
+        head = []
+        for rec in S.stream(path):
+            head.append(rec)
+            if len(head) >= 20:
+                break
+        assert S.detect_kind(head) == src.kind, src.filename
+        checked += 1
+    if checked == 0:
+        pytest.skip("원본 데이터가 없다 (시드만 있는 환경)")
+
+
+def test_kind_markers_are_unambiguous():
+    """종류를 가르는 필드가 서로 겹치면 판별 순서에 결과가 좌우된다.
+
+    STATUS 와 CONTROL 은 gear_num 을 공유하므로, 마커는 그런 공유 필드가
+    아니어야 한다.
+    """
+    from pipeline import sources as S
+
+    markers = [m for _, m in S.KIND_MARKERS]
+    assert len(markers) == len(set(markers)), "마커가 중복된다"
+    assert {k for k, _ in S.KIND_MARKERS} == {
+        S.BSM, S.GPS, S.STATUS, S.OBJECT, S.CONTROL,
+    }, "5종 전부에 마커가 있어야 한다"
+
+
+def test_registered_files_are_not_rediscovered():
+    """등록된 파일이 자동 인식으로 중복 잡히면 두 번 적재된다."""
+    from pipeline import sources as S
+
+    registered = {s.filename for s in S.SOURCES}
+    for f in S.discover():
+        assert f.filename not in registered
+
+    all_names = [s.filename for s in S.all_sources()]
+    assert len(all_names) == len(set(all_names)), "소스 목록에 중복이 있다"
+
+
+def test_discovered_files_skip_count_check():
+    """자동 인식분은 기대 건수를 알 수 없으므로 대조하지 않는다.
+
+    등록분은 그대로 대조해 파일이 잘렸는지 잡아낸다 — 두 경로가 공존한다.
+    """
+    from pipeline.ingest import FileReport
+    from pipeline import sources as S
+
+    auto = S.SourceFile("새파일.json", S.GPS, "2026-01-01",
+                        expected_count=None, discovered=True)
+    assert FileReport(src=auto, count=123).count_ok
+
+    known = S.SourceFile("등록파일.json", S.GPS, "2026-01-01", expected_count=100)
+    assert FileReport(src=known, count=100).count_ok
+    assert not FileReport(src=known, count=99).count_ok

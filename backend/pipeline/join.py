@@ -50,7 +50,7 @@ def _f(v) -> float | None:
 
 
 def _sources_for(session_id: str, kind: str) -> list[S.SourceFile]:
-    return [s for s in S.SOURCES if s.session_id == session_id and s.kind == kind]
+    return [s for s in S.all_sources() if s.session_id == session_id and s.kind == kind]
 
 
 def collect_signals(session_id: str) -> dict[int, SecondSignals]:

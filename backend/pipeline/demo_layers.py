@@ -54,7 +54,7 @@ def normalization_points(conn: psycopg.Connection) -> dict:
         cur.execute("TRUNCATE normalization_points RESTART IDENTITY")
 
     counts = {"raw": 0, "normalized": 0, "rows": 0}
-    for src in S.SOURCES:
+    for src in S.all_sources():
         if src.kind != S.BSM:
             continue
         path = S.raw_path(src)
@@ -119,7 +119,7 @@ def trajectories(conn: psycopg.Connection) -> dict:
         cur.execute("TRUNCATE trajectories RESTART IDENTITY")
 
     out: dict[str, int] = {}
-    for src in S.SOURCES:
+    for src in S.all_sources():
         if src.kind != S.GPS:
             continue
         path = S.raw_path(src)

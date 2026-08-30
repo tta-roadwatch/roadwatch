@@ -101,7 +101,7 @@ def _joined_observations(conn: psycopg.Connection, session_id: str) -> list[Seco
 
 def observations(conn: psycopg.Connection, session_id: str) -> list[SecondObs]:
     """세션의 초 단위 관측. BSM 세션이면 A, 아니면 B."""
-    kinds = {s.kind for s in S.SOURCES if s.session_id == session_id}
+    kinds = {s.kind for s in S.all_sources() if s.session_id == session_id}
     if S.BSM in kinds:
         return _bsm_observations(conn, session_id)
     return _joined_observations(conn, session_id)

@@ -75,7 +75,7 @@ def aggregate(conn: psycopg.Connection, session_id: str) -> dict[tuple[int, int]
     ev_by_sec = {o.sec: o.events for o in obs}
     refs_by_sec = {o.sec: o.refs for o in obs}
 
-    kinds = {s.kind for s in S.SOURCES if s.session_id == session_id}
+    kinds = {s.kind for s in S.all_sources() if s.session_id == session_id}
     pos_kind = S.BSM if S.BSM in kinds else S.GPS
     touched = _cells_touched(conn, session_id, pos_kind)
 

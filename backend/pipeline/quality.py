@@ -76,7 +76,7 @@ def run(conn: psycopg.Connection) -> list[Check]:
 
     # 세션별로 파일을 모은다
     by_session: dict[str, list[S.SourceFile]] = {}
-    for src in S.SOURCES:
+    for src in S.all_sources():
         by_session.setdefault(src.session_id, []).append(src)
 
     checks: list[Check] = []
