@@ -47,7 +47,7 @@ export function Datasets() {
         >
           {mismatched.map((d) => d.identifier).join(", ")} — 수집 시각은 파일명이
           아니라 ss_num(epoch)에서 복원한 실제 값을 사용해 분석했습니다. 감춘 것이
-          아니라 메타데이터에 그대로 기록했습니다.
+          해당 차이는 메타데이터에 기록했습니다.
         </Alert>
       )}
 

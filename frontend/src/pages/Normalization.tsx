@@ -80,7 +80,7 @@ export function Normalization() {
         aside={`${n.source} 기준`}
         footer={
           applied
-            ? `세션별 코드북을 적용해 ${num(n.corrected)}건의 오판을 제거했습니다.`
+            ? `세션별 코드북을 적용해 오판 가능성이 있는 ${num(n.corrected)}건을 보정했습니다.`
             : `정규화를 적용하지 않으면 ${num(n.corrected)}건이 잘못 판정됩니다.`
         }
       >
@@ -167,7 +167,7 @@ export function Normalization() {
           <p className="rw-note" style={{ marginTop: "var(--rw-space-4)" }}>
             {applied
               ? "세션 코드북을 적용해 값이 false 로 판정됩니다. 오판 0건."
-              : `이 세션에서는 1이 정상인데 발생으로 읽어 ${num(n.corrected)}건이 뒤집힙니다.`}
+              : `이 세션에서는 1이 정상이지만 발생으로 읽어 ${num(n.corrected)}건이 반대로 판정됩니다.`}
           </p>
         </Card>
       </div>
