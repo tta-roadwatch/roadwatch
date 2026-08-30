@@ -5,6 +5,7 @@ import { api } from "../api/client";
 import { useApi } from "../api/useApi";
 import { Logo } from "../components/Logo";
 import { Reveal } from "../components/Reveal";
+import { RoadIllustration } from "../components/RoadIllustration";
 import { num } from "../lib/format";
 import { useCountUp, useInView } from "../lib/reveal";
 
@@ -124,18 +125,14 @@ export function Landing() {
           </div>
         </div>
 
-        {/* 제품 미리보기. 스톡 사진 대신 실제 화면을 쓴다 — "이런 서비스입니다"가
-            한 번에 읽히고, 동작하는 물건이라는 증거도 된다. */}
-        <Reveal as="figure" className="rw-lp-shot">
-          <img
-            src="/shots/map.jpg"
-            alt="취약도로 지도 화면. 판교 일대 지도 위에 40m 격자가 분류색으로 표시되고, 세 번의 주행 궤적이 겹쳐 그려져 있다."
-            width={1680}
-            height={1050}
-            loading="eager"
-          />
+        {/* 지도 스크린샷 대신 개념 그림을 둔다. 스크린샷은 정보가 많아
+            "무엇을 하는 서비스인가"가 한눈에 안 들어온다. 실제 화면은 아래
+            정규화 비교에서 보여준다. */}
+        <Reveal as="figure" className="rw-lp-shot rw-lp-shot--illust">
+          <RoadIllustration />
           <figcaption>
-            실제 화면 — 판교 일대 40m 격자와 서로 다른 세 주행의 궤적
+            서로 다른 날 지나간 세 주행이 같은 자리에서 걸렸다면, 그건 그날의
+            사정이 아니라 도로 쪽 문제일 수 있습니다
           </figcaption>
         </Reveal>
 

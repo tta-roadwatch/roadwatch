@@ -826,3 +826,51 @@ html:has(.rw-lp) {
     transform: none;
   }
 }
+
+/* ── Hero 일러스트 ───────────────────────────────────────
+   지도 스크린샷 자리를 대신한다. 이미지가 아니라 SVG 라 테두리·그림자를
+   두르지 않는다 — 그림 자체가 배경에 얹혀 있는 편이 가볍다. */
+
+.rw-lp-shot--illust {
+  border: 0;
+}
+
+.rw-lp-illust {
+  display: block;
+  width: 100%;
+  height: clamp(220px, 26vw, 320px);
+}
+
+/* 격자 셀이 순서대로 나타난다 — "반복해서 걸렸다"를 시간으로 보인다 */
+.rw-lp-illust__cells rect {
+  animation: rw-cell-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  transform-origin: center;
+}
+
+@keyframes rw-cell-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 0.92;
+    transform: scale(1);
+  }
+}
+
+.rw-lp-illust__pin {
+  animation: rw-cell-in 0.5s 0.7s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* 움직임은 끄되 그림은 완성된 상태로 보여야 한다 */
+  .rw-lp-illust__cells rect {
+    animation: none;
+    opacity: 0.92;
+  }
+  .rw-lp-illust__pin {
+    animation: none;
+  }
+  /* 달리는 차와 맥박은 SVG 애니메이션이라 CSS 로 못 끈다.
+     RoadIllustration 이 이 경우 정지 상태로 그린다. */
+}
