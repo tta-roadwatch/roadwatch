@@ -159,8 +159,12 @@ def _r(v):
 MISJUDGED_TOTAL = VERIFIED["emergency_without_codebook"]
 
 @router.get("/normalization", summary="정규화 전·후 비상정지 지점 (GeoJSON)")
-def normalization_points(normalized: bool = Query(
-        False, description="false=정규화 안 함(지도가 뒤덮임), true=정규화 적용")):
+def normalization_points(
+    normalized: bool = Query(
+        False, description="false=정규화 안 함(지도가 뒤덮임), true=정규화 적용"),
+    slim: bool = Query(
+        True, description="점별 속성을 빼고 좌표만 — 15,124점을 그릴 때 응답이 3.9MB→1.3MB"),
+):
     """토글 하나로 판정이 뒤집히는 장면을 지도로 보여준다.
 
     같은 BSM 레코드를 두 번 판정한 결과다. 정규화하지 않으면 표준 체계(1=발생)를
@@ -186,13 +190,17 @@ def normalization_points(normalized: bool = Query(
 
     return {
         "type": "FeatureCollection",
+        # 15,124점을 그릴 때는 점마다 속성을 실으면 응답이 3.9MB 가 된다.
+        # 지도는 점을 찍기만 하고 속성을 읽지 않으므로 기본은 좌표만 보낸다.
+        # 정규화 후 3건은 어떤 플래그였는지가 중요하므로 slim 이어도 싣는다.
         "features": [
             {"type": "Feature",
              "geometry": {"type": "Point", "coordinates": [r["lon"], r["lat"]]},
-             "properties": {"session_id": r["session_id"],
-                            "observed_at": _iso(r["observed_at"]),
-                            "codebook": r["codebook"],
-                            "flags": r["flags"]}}
+             "properties": ({} if slim and not normalized else {
+                 "session_id": r["session_id"],
+                 "observed_at": _iso(r["observed_at"]),
+                 "codebook": r["codebook"],
+                 "flags": r["flags"]})}
             for r in rows
         ],
         "metadata": {

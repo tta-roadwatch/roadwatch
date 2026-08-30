@@ -16,10 +16,12 @@ import type {
   LoginResponse,
   MapBounds,
   Normalization,
+  NormalizationPointCollection,
   Quality,
   Report,
   RoadLinkCollection,
   Standards,
+  TrajectoryCollection,
 } from "./types";
 
 const BASE = (import.meta.env.VITE_API_BASE || "http://localhost:8000").replace(
@@ -177,6 +179,22 @@ export const api = {
     ),
 
   geoBounds: () => request<MapBounds>("/api/geo/bounds"),
+
+  /**
+   * SCR-03 — 정규화 전·후 비상정지 지점.
+   * normalized=false 면 지도가 15,124개 마커로 뒤덮이고, true 면 3개만 남는다.
+   */
+  geoNormalization: (normalized: boolean) =>
+    request<NormalizationPointCollection>(
+      `/api/geo/normalization${normalized ? "?normalized=true" : ""}`,
+    ),
+
+  geoTrajectories: (sessionId?: string) =>
+    request<TrajectoryCollection>(
+      `/api/geo/trajectories${
+        sessionId ? `?session_id=${encodeURIComponent(sessionId)}` : ""
+      }`,
+    ),
 
   /** SCR-09 — 표준 응답을 화면에서 그대로 보여주기 위한 원문 조회 */
   entities: (opts?: { keyValues?: boolean; limit?: number }) => {

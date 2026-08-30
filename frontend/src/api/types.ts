@@ -320,6 +320,47 @@ export interface RoadLinkCollection {
   metadata: { source: string; crs_note: string; count: number };
 }
 
+/**
+ * SCR-03 데모 하이라이트 — 정규화 전·후 비상정지 지점.
+ *
+ * 지도에 찍히는 수(mapped_raw)와 실측 오판 수(misjudged_total)가 다르다.
+ * 차이는 좌표가 유효하지 않아 표시할 수 없는 레코드다. 화면이 "15,588개
+ * 마커"라고 말하면 과장이므로 두 수를 모두 받아 구분해 표기한다.
+ */
+export interface NormalizationPointCollection {
+  type: "FeatureCollection";
+  features: {
+    type: "Feature";
+    geometry: { type: "Point"; coordinates: [number, number] };
+    properties: {
+      session_id: string;
+      observed_at: string | null;
+      codebook: string;
+      flags: string[];
+    };
+  }[];
+  metadata: {
+    normalized: boolean;
+    mapped: number;
+    mapped_raw: number;
+    mapped_normalized: number;
+    misjudged_total: number;
+    not_mappable: number;
+    coverage_note: string;
+  };
+}
+
+/** SCR-05 — 차량이 실제로 지나간 경로. 격자는 분석 단위지 주행이 아니다. */
+export interface TrajectoryCollection {
+  type: "FeatureCollection";
+  features: {
+    type: "Feature";
+    geometry: { type: "LineString"; coordinates: [number, number][] };
+    properties: { session_id: string; seconds: number };
+  }[];
+  metadata: { sessions: number; points: number; note: string };
+}
+
 export interface MapBounds {
   bbox: [number, number, number, number] | null;
   center: [number, number] | null;

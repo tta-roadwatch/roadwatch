@@ -7,11 +7,13 @@ import type {
   CellFeatureCollection,
   MapBounds,
   RoadLinkCollection,
+  TrajectoryCollection,
 } from "../api/types";
 import { ClassBadge, StatusBadge } from "../components/Badge";
 import { Card } from "../components/Card";
 import { EventRate } from "../components/EventRate";
 import { PageHeader } from "../components/PageHeader";
+import { Toggle } from "../components/Toggle";
 import { ErrorState, Loading } from "../components/States";
 import { VulnerabilityMap, VWORLD_KEY } from "../components/VulnerabilityMap";
 import {
@@ -21,6 +23,7 @@ import {
   type ClassKey,
 } from "../lib/classification";
 import { FAMILY_ORDER, familyShort } from "../lib/family";
+import { trajColorVar } from "../lib/trajectory";
 import { coord, num, pct } from "../lib/format";
 
 /** 범례에 세우는 순서. always_manual 은 현 데이터에 0곳이지만 빼지 않는다 —
@@ -32,6 +35,7 @@ interface Bundle {
   cells: CellFeatureCollection;
   roads: RoadLinkCollection | null;
   bounds: MapBounds | null;
+  trajectories: TrajectoryCollection | null;
 }
 
 /** SCR-05 취약도로 지도.
@@ -42,6 +46,9 @@ interface Bundle {
 export function MapPage() {
   const [visible, setVisible] = useState<ClassKey[]>(LEGEND);
   const [minSessions, setMinSessions] = useState(1);
+  // 기본으로 켜 둔다. 격자가 주행 경로 위에 얹혀 있다는 사실이 이 화면에서
+  // 가장 먼저 보여야 할 것이라, 켜려면 찾아야 하는 옵션으로 두지 않는다.
+  const [showTraj, setShowTraj] = useState(true);
 
   // 구간 상세의 "지도에서 보기"로 들어오면 해당 격자를 미리 선택해 둔다.
   // 선택 상태를 URL 에 두면 링크를 그대로 공유할 수도 있다.
@@ -59,13 +66,14 @@ export function MapPage() {
     );
 
   const { data, loading, error, reload } = useApi<Bundle>(async () => {
-    const [cells, roads, bounds] = await Promise.all([
+    const [cells, roads, bounds, trajectories] = await Promise.all([
       api.geoCells(),
-      // 도로망과 경계는 부가 정보다. 실패해도 격자는 떠야 한다.
+      // 도로망·경계·궤적은 부가 정보다. 실패해도 격자는 떠야 한다.
       api.geoRoadLinks(true).catch(() => null),
       api.geoBounds().catch(() => null),
+      api.geoTrajectories().catch(() => null),
     ]);
-    return { cells, roads, bounds };
+    return { cells, roads, bounds, trajectories };
   }, []);
 
   const counts = useMemo(() => {
@@ -191,6 +199,8 @@ export function MapPage() {
               cells={data.cells}
               roads={data.roads}
               bounds={data.bounds}
+              trajectories={data.trajectories}
+              showTrajectories={showTraj}
               visibleClasses={visible}
               minObservedSessions={minSessions}
               selectedCellKey={selected}
@@ -211,6 +221,30 @@ export function MapPage() {
                 </span>
               </span>
             ))}
+
+            {/* 궤적은 분류가 아니라 주행이라 범례에서 구분선을 두고 세운다 */}
+            {data.trajectories && data.trajectories.features.length > 0 && (
+              <>
+                <span className="rw-legend__sep" aria-hidden="true" />
+                {data.trajectories.features.map((f) => (
+                  <span key={f.properties.session_id} className="rw-legend__item">
+                    <span
+                      className="rw-legend__swatch rw-legend__swatch--line"
+                      style={{
+                        background: `var(${trajColorVar(f.properties.session_id)})`,
+                      }}
+                      aria-hidden="true"
+                    />
+                    <span className="rw-aux">{f.properties.session_id} 주행</span>
+                  </span>
+                ))}
+                <Toggle
+                  checked={showTraj}
+                  onChange={setShowTraj}
+                  label="주행 궤적"
+                />
+              </>
+            )}
           </div>
         </div>
 

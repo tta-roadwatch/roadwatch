@@ -4,6 +4,7 @@ import { api } from "../api/client";
 import { useApi } from "../api/useApi";
 import { Alert } from "../components/Alert";
 import { Card } from "../components/Card";
+import { NormalizationMap } from "../components/NormalizationMap";
 import { PageHeader } from "../components/PageHeader";
 import { ErrorState, Loading } from "../components/States";
 import { SubTabs } from "../components/SubTabs";
@@ -25,6 +26,19 @@ export function Normalization() {
   const [applied, setApplied] = useState(true);
 
   const { data, loading, error, reload } = useApi(() => api.normalization(), []);
+
+  // 지도는 부가 레이어다. 실패해도 숫자와 JSON 대비는 그대로 보여야 한다.
+  const map = useApi(
+    async () => {
+      const [before, after, bounds] = await Promise.all([
+        api.geoNormalization(false),
+        api.geoNormalization(true),
+        api.geoBounds().catch(() => null),
+      ]);
+      return { before, after, bounds };
+    },
+    [],
+  );
 
   if (loading) return <Loading label="정규화 결과를 불러오는 중입니다" />;
   if (error || !data) {
@@ -103,6 +117,31 @@ export function Normalization() {
           </div>
         </div>
       </Card>
+
+      {/* 숫자가 바뀌는 것보다 지도가 비워지는 장면이 같은 사실을 훨씬 강하게
+          전달한다. 토글 하나가 두 표현을 동시에 뒤집는다. */}
+      {map.data && (
+        <Card
+          title="정규화가 판정을 바꾸는 범위"
+          aside={
+            applied
+              ? `${num(map.data.after.features.length)}곳`
+              : `${num(map.data.before.features.length)}곳`
+          }
+          footer={map.data.before.metadata.coverage_note}
+        >
+          <NormalizationMap
+            points={applied ? map.data.after : map.data.before}
+            bounds={map.data.bounds}
+            normalized={applied}
+          />
+          <p className="rw-note" style={{ marginTop: "var(--rw-space-4)" }}>
+            {applied
+              ? "세션별 코드북을 적용하면 실제 센서 이상 3건만 남습니다."
+              : "같은 코드 체계를 모든 세션에 가정하면 판교 전 구간이 비상정지로 판정됩니다."}
+          </p>
+        </Card>
+      )}
 
       <div className="rw-cols rw-cols--2">
         <Card title="원본 BSM" aside="공간데이터마켓 원본">

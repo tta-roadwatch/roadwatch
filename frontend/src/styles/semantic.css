@@ -52,6 +52,13 @@
 
   /* 판정 없음 — 분류가 붙지 않은 격자 */
   --rw-unranked: var(--krds-color-light-gray-30);
+
+  /* 주행 궤적 — 분류 색(warning·success)과 겹치지 않게 primary 계열로 가른다.
+     세션을 구분하는 게 목적이지 심각도를 뜻하지 않는다. */
+  --rw-traj-1: var(--krds-color-light-primary-50);
+  --rw-traj-2: var(--krds-color-light-primary-70);
+  --rw-traj-3: var(--krds-color-light-primary-30);
+  --rw-traj-other: var(--krds-color-light-gray-50);
   --rw-unranked-weak: var(--krds-color-light-gray-5);
   --rw-unranked-text: var(--krds-color-light-gray-60);
   --rw-unranked-border: var(--krds-color-light-gray-20);

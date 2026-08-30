@@ -619,3 +619,19 @@ def test_trajectory_covers_target_cell(client):
     pts = traj["features"][0]["geometry"]["coordinates"]
     inside = [p for p in pts if w <= p[0] <= e and s <= p[1] <= n]
     assert inside, "05-16 주행이 21:4 셀을 지나가야 한다"
+
+
+def test_normalization_slim_keeps_what_matters(client):
+    """15,124점에 속성을 실으면 응답이 3.9MB 다. 지도는 점만 찍으므로 뺀다.
+
+    다만 정규화 후 3건은 '어떤 플래그가 남았는지'가 근거라서 slim 이어도 싣는다.
+    """
+    slim = client.get("/api/geo/normalization").json()
+    full = client.get("/api/geo/normalization", params={"slim": False}).json()
+    assert len(slim["features"]) == len(full["features"]) == 15_124
+    assert slim["features"][0]["properties"] == {}
+    assert full["features"][0]["properties"]["session_id"]
+
+    after = client.get("/api/geo/normalization", params={"normalized": True}).json()
+    for f in after["features"]:
+        assert f["properties"]["flags"] == ["snsr_trb_flg"]
