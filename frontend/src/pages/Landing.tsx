@@ -20,6 +20,14 @@ import { useCountUp, useInView } from "../lib/reveal";
 /** API 실패 시 쓰는 값. docs/thresholds.md 와 인수 기준의 실측치와 같다. */
 const FALLBACK = { records: 843_734, sessions: 8, cells: 89, candidates: 24 };
 
+/** Hero 배경 사진. public/hero.jpg 를 두면 자동으로 적용되고, 없으면
+ * 그라데이션 배경이 그대로 쓰인다 — 사진이 준비되지 않아도 화면은 완성이다.
+ *
+ * 사진 위 글자 대비는 CSS 오버레이가 고정하므로, 사진의 밝기와 무관하게
+ * WCAG 기준을 지킨다. 다만 초점이 가운데 몰린 사진은 글자와 겹치므로
+ * 여백이 있는 구도를 쓰는 편이 낫다. */
+const HERO_PHOTO = "/hero.jpg";
+
 const NAV = [
   { href: "#problem", label: "왜 필요한가" },
   { href: "#how", label: "어떻게 찾는가" },
@@ -80,13 +88,21 @@ const FAQ = [
 export function Landing() {
   const { data } = useApi(() => api.dashboard().catch(() => null), []);
   const s = data?.stats ?? FALLBACK;
+  const heroPhoto = useOptionalImage(HERO_PHOTO);
 
   return (
     <div className="rw-lp">
       <LandingHeader />
 
       {/* ── Hero ── */}
-      <section className="rw-lp-hero">
+      <section
+        className={`rw-lp-hero${heroPhoto ? " rw-lp-hero--photo" : ""}`}
+        style={
+          heroPhoto
+            ? ({ "--rw-lp-hero-photo": `url("${HERO_PHOTO}")` } as React.CSSProperties)
+            : undefined
+        }
+      >
         <div className="rw-lp-hero__inner rw-lp-hero__inner--enter">
           <p className="rw-lp-eyebrow">자율주행 데이터 기반 도로환경 분석</p>
           <h1 className="rw-lp-hero__title">
@@ -327,6 +343,26 @@ function StatBar({
       <Stat value="98.8%" label="좌표 유효율" />
     </dl>
   );
+}
+
+/** 이미지가 실제로 있는지 확인한다.
+ *
+ * 파일이 없을 때 깨진 이미지나 빈 영역이 남으면 안 되므로, 로드에 성공한
+ * 뒤에야 배경으로 쓴다. 사진을 아직 준비하지 않았어도 화면은 완성된 상태로
+ * 보인다. */
+function useOptionalImage(src: string): boolean {
+  const [ok, setOk] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    const img = new Image();
+    img.onload = () => alive && setOk(true);
+    img.onerror = () => alive && setOk(false);
+    img.src = src;
+    return () => {
+      alive = false;
+    };
+  }, [src]);
+  return ok;
 }
 
 function Stat({

@@ -185,9 +185,9 @@ html:has(.rw-lp) {
 /* ── Hero ─────────────────────────────────────────────── */
 
 .rw-lp-hero {
+  position: relative;
   padding: 80px var(--rw-gutter) 0;
-  /* 배경 사진 대신 옅은 그라데이션. 사진을 깔면 글자 대비를 따로 관리해야
-     하는데, 정부 서비스 화면에서 대비가 흔들리는 건 피하고 싶다. */
+  /* 기본은 옅은 그라데이션. 배경 사진이 있으면 .rw-lp-hero--photo 가 덮는다. */
   background:
     radial-gradient(
       1200px 400px at 50% -80px,
@@ -197,10 +197,73 @@ html:has(.rw-lp) {
     var(--rw-surface);
 }
 
+/* ── 배경 사진 ──
+   사진 위에 흰 글자를 올리면 사진마다 명도가 달라 대비가 흔들린다. KRDS 를
+   따르는 화면에서 본문 대비가 사진에 좌우되면 안 되므로, 어두운 오버레이를
+   깔아 대비를 코드로 고정한다. 사진이 밝든 어둡든 글자 대비는 그대로다. */
+.rw-lp-hero--photo {
+  --rw-lp-hero-photo: none;
+  background: var(--krds-color-light-primary-90);
+}
+
+.rw-lp-hero--photo::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--rw-lp-hero-photo);
+  background-size: cover;
+  background-position: center 42%;
+  /* 사진 자체를 눌러 글자가 뜨게 한다 */
+  opacity: 0.42;
+}
+
+/* 아래로 갈수록 짙어져 본문(흰 배경)으로 자연스럽게 넘어간다 */
+.rw-lp-hero--photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(3, 22, 58, 0.55) 0%,
+    rgba(3, 22, 58, 0.35) 38%,
+    var(--rw-surface) 100%
+  );
+}
+
 .rw-lp-hero__inner {
+  position: relative;
+  z-index: 1;
   max-width: 860px;
   margin: 0 auto;
   text-align: center;
+}
+
+/* 사진 위에서는 글자와 배지 색을 반전한다 */
+.rw-lp-hero--photo .rw-lp-hero__title {
+  color: #fff;
+  text-shadow: 0 1px 24px rgba(3, 22, 58, 0.4);
+}
+.rw-lp-hero--photo .rw-lp-hero__lead {
+  color: rgba(255, 255, 255, 0.92);
+}
+.rw-lp-hero--photo .rw-lp-eyebrow {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.18);
+}
+.rw-lp-hero--photo .rw-lp-btn--ghost {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.5);
+}
+.rw-lp-hero--photo .rw-lp-btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* 제품 화면과 지표는 사진 위가 아니라 아래쪽 흰 영역에 놓인다 */
+.rw-lp-hero--photo .rw-lp-shot,
+.rw-lp-hero--photo .rw-lp-stats {
+  position: relative;
+  z-index: 1;
 }
 
 .rw-lp-hero__title {
@@ -601,7 +664,12 @@ html:has(.rw-lp) {
 .rw-lp-shot img {
   display: block;
   width: 100%;
-  height: auto;
+  /* 높이를 묶어 띠처럼 넣는다. 원본 비율대로 두면 화면을 통째로 차지해서
+     스크롤해도 지도만 보인다 — 랜딩에서 한 요소가 화면을 다 먹으면 다음
+     내용이 있다는 신호가 사라진다. */
+  height: clamp(260px, 34vw, 420px);
+  object-fit: cover;
+  object-position: center 42%;
   border: 1px solid var(--rw-border);
   border-radius: var(--rw-radius-xl);
   /* 화면 자체가 밝아서 그림자로 배경과 띄운다 */
@@ -633,7 +701,9 @@ html:has(.rw-lp) {
 .rw-lp-compare img {
   display: block;
   width: 100%;
-  height: auto;
+  height: clamp(200px, 22vw, 280px);
+  object-fit: cover;
+  object-position: center;
   border: 1px solid var(--rw-border);
   border-radius: var(--rw-radius-lg);
   background: var(--rw-surface);
