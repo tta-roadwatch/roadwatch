@@ -446,7 +446,8 @@ html:has(.rw-lp) {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
-  margin: 4px 0 28px;
+  /* 위 라벨과 붙어 보이던 것을 띄운다. 원이 커서 4px 로는 숨이 막힌다. */
+  margin: 32px 0 32px;
 }
 
 .rw-lp-dial {
@@ -521,7 +522,9 @@ html:has(.rw-lp) {
 
 .rw-lp-evidence__list li {
   display: flex;
-  align-items: baseline;
+  /* baseline 으로 두면 큰 숫자와 작은 설명의 글꼴 기준선이 맞춰지느라
+     상자 안에서 위로 쏠린다. 세로 가운데가 맞다. */
+  align-items: center;
   gap: 14px;
   border: 1px solid var(--rw-border);
   border-radius: var(--rw-radius-md);

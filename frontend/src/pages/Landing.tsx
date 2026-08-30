@@ -381,7 +381,9 @@ function RateDial({
           cy="60"
           r={R}
           fill="none"
-          stroke="var(--rw-intermittent-text)"
+          /* 채움은 밝은 주황(warning-30). 글자용 warning-50 은 갈색에 가까워
+             큰 면적에 쓰면 칙칙하다. 원 안 숫자는 대비를 위해 그대로 둔다. */
+          stroke="var(--rw-intermittent)"
           strokeWidth="13"
           strokeLinecap="round"
           strokeDasharray={C}
