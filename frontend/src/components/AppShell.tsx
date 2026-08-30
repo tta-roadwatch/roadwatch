@@ -23,7 +23,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="rw-gnb__inner">
           <Link to="/" className="rw-gnb__brand">
             <Logo />
-            자율주행 취약도로 탐지
+            RoadWatch
           </Link>
 
           <nav className="rw-gnb__menu" aria-label="주요 메뉴">

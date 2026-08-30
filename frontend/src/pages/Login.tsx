@@ -54,8 +54,10 @@ export function Login() {
         <div className="rw-login__brand">
           <Logo size={40} />
           <div>
-            <h1 className="rw-card-title">자율주행 취약도로 탐지</h1>
-            <p className="rw-aux">경기도자율주행센터 · 도로관리 담당자용</p>
+            {/* 서비스명만 두면 처음 보는 사람이 무슨 서비스인지 알 수 없다.
+                로그인은 외부에서 처음 닿는 화면이라 부제에 설명을 남긴다. */}
+            <h1 className="rw-card-title">RoadWatch</h1>
+            <p className="rw-aux">자율주행 취약도로 탐지 · 도로관리 담당자용</p>
           </div>
         </div>
 
