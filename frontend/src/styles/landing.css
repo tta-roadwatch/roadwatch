@@ -919,3 +919,147 @@ html:has(.rw-lp) {
   /* 달리는 차와 맥박은 SVG 애니메이션이라 CSS 로 못 끈다.
      RoadIllustration 이 이 경우 정지 상태로 그린다. */
 }
+
+/* ── 표준 적용 ────────────────────────────────────────── */
+
+.rw-lp-std {
+  max-width: var(--rw-max-width);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.rw-lp-std__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.rw-lp-std__list li {
+  background: var(--rw-surface);
+  border: 1px solid var(--rw-border);
+  border-radius: var(--rw-radius-lg);
+  padding: 20px 24px;
+}
+
+.rw-lp-std__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.rw-lp-std__head code {
+  font-family: var(--rw-font-mono);
+  font-size: 13px;
+  color: var(--rw-text);
+}
+
+/* 구현·부분·참조를 색으로 가른다. 셋을 같게 두면 «다 했다»로 읽힌다. */
+.rw-lp-std__tag {
+  flex: none;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: var(--rw-weight-bold);
+}
+.rw-lp-std__tag--done {
+  background: var(--rw-low-weak);
+  color: var(--rw-low-text);
+}
+.rw-lp-std__tag--partial {
+  background: var(--rw-intermittent-weak);
+  color: var(--rw-intermittent-text);
+}
+.rw-lp-std__tag--ref {
+  background: var(--rw-unranked-weak);
+  color: var(--rw-text-secondary);
+}
+
+.rw-lp-std__name {
+  margin: 0 0 6px;
+  font-size: var(--rw-size-body);
+  font-weight: var(--rw-weight-bold);
+}
+
+.rw-lp-std__role {
+  margin: 0;
+  font-size: var(--rw-size-aux);
+  line-height: 1.6;
+  color: var(--rw-text-secondary);
+}
+
+/* 실제 응답 — 코드가 주인공이라 카드를 어둡게 두지 않고 흰 배경에 둔다 */
+.rw-lp-std__sample {
+  background: var(--rw-surface);
+  border: 1px solid var(--rw-border);
+  border-radius: var(--rw-radius-lg);
+  padding: 24px;
+  position: sticky;
+  top: 96px;
+}
+
+.rw-lp-std__path {
+  margin: 0 0 12px;
+}
+.rw-lp-std__path code {
+  font-family: var(--rw-font-mono);
+  font-size: 13px;
+  color: var(--rw-text-secondary);
+}
+
+.rw-lp-std__sample pre {
+  margin: 0 0 16px;
+  padding: 16px;
+  border-radius: var(--rw-radius-md);
+  background: var(--rw-surface-sunken);
+  /* 긴 줄이 카드를 밀어내지 않게 가로로만 넘긴다 */
+  overflow-x: auto;
+}
+
+.rw-lp-std__sample pre code {
+  font-family: var(--rw-font-mono);
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: var(--rw-text);
+  white-space: pre;
+}
+
+.rw-lp-std__note {
+  margin: 0;
+  font-size: var(--rw-size-aux);
+  line-height: 1.7;
+  color: var(--rw-text-secondary);
+}
+.rw-lp-std__note code {
+  font-family: var(--rw-font-mono);
+  font-size: 12.5px;
+  background: var(--rw-surface-sunken);
+  border-radius: 3px;
+  padding: 1px 5px;
+}
+
+.rw-lp-std__foot {
+  max-width: var(--rw-max-width);
+  margin: 20px auto 0;
+}
+.rw-lp-std__foot p {
+  margin: 0;
+  font-size: var(--rw-size-aux);
+  line-height: 1.7;
+  color: var(--rw-text-muted);
+}
+
+@media (max-width: 1024px) {
+  .rw-lp-std {
+    grid-template-columns: 1fr;
+  }
+  .rw-lp-std__sample {
+    position: static;
+  }
+}

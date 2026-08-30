@@ -32,6 +32,7 @@ const HERO_PHOTO = "/hero.jpg";
 const NAV = [
   { href: "#problem", label: "왜 필요한가" },
   { href: "#how", label: "어떻게 찾는가" },
+  { href: "#standards", label: "표준 적용" },
   { href: "#evidence", label: "실증 결과" },
   { href: "#faq", label: "자주 묻는 질문" },
 ];
@@ -62,6 +63,66 @@ const FEATURES = [
     tag: "개선 전·후 비교",
   },
 ];
+
+/** 랜딩에 세우는 표준 목록.
+ *
+ * 백엔드 /api/standards 와 같은 내용이되 여기서는 정적으로 둔다. 랜딩은 API 가
+ * 죽어도 떠야 하고, 이 목록은 자주 바뀌지 않는다. 바뀌면 양쪽을 함께 고친다.
+ *
+ * 구현·부분 구현·설계 참조를 구분하는 것이 핵심이다. 다섯 건을 모두 «적용»
+ * 이라 적으면 코드를 열어본 심사자에게 곧바로 들통난다. 어디까지 했는지
+ * 밝히는 편이 신뢰를 얻는다.
+ */
+const STANDARDS = [
+  {
+    id: "TTAK.KO-10.1331-Part4/R1",
+    name: "스마트시티 데이터허브 — 데이터 모델",
+    role: "분석 결과를 NGSI-LD 정규 표현법과 TrafficEvent 모델로 제공합니다.",
+    status: "구현",
+    tone: "done" as const,
+  },
+  {
+    id: "TTAK.KO-10.1331-Part3",
+    name: "인터페이스 및 프로토콜",
+    role: "조회 API를 6장 인터페이스 명세와 5장 응답 코드 체계에 맞췄습니다.",
+    status: "구현",
+    tone: "done" as const,
+  },
+  {
+    id: "TTAK.KO-10.1398",
+    name: "스마트시티 데이터세트 메타데이터",
+    role: "주행 세션 8건을 DCAT 기반 데이터세트로 등록하고 품질 문제까지 드러냅니다.",
+    status: "구현",
+    tone: "done" as const,
+  },
+  {
+    id: "TTAK.KO-06.0580",
+    name: "이동통신망 기반 V2N 정보 연계",
+    role: "BSM 원본 필드를 실제로 파싱해 적재합니다. 메시지 규격 자체의 인코더는 구현하지 않았습니다.",
+    status: "부분 구현",
+    tone: "partial" as const,
+  },
+  {
+    id: "TTAK.KO-10.1331-Part2",
+    name: "참조구조",
+    role: "수집–정규화–저장–제공 계층 분리의 설계 근거로 삼았습니다.",
+    status: "설계 참조",
+    tone: "ref" as const,
+  },
+];
+
+/** 랜딩에 싣는 실제 응답. GET /ngsi-ld/v1/entities/... 를 그대로 가져왔다. */
+const NGSI_SAMPLE = `{
+  "id": "urn:ngsi-ld:TrafficEvent:roadwatch:21:4",
+  "type": "TrafficEvent",
+  "name":     { "type": "Property", "value": "대왕판교로" },
+  "location": { "type": "GeoProperty",
+                "value": { "type": "Point",
+                           "coordinates": [127.1047865, 37.4035015] } },
+  "category": { "type": "Property", "value": "roadCondition" },
+  "sessionCount": { "type": "Property", "value": 6 },
+  "@context": [ "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld" ]
+}`;
 
 const FAQ = [
   {
@@ -105,7 +166,7 @@ export function Landing() {
         }
       >
         <div className="rw-lp-hero__inner rw-lp-hero__inner--enter">
-          <p className="rw-lp-eyebrow">자율주행 데이터 기반 도로환경 분석</p>
+          <p className="rw-lp-eyebrow">TTA 표준 기반 자율주행 도로환경 분석</p>
           <h1 className="rw-lp-hero__title">
             자율주행차가 반복해서 멈춘 도로,
             <br />
@@ -238,6 +299,59 @@ export function Landing() {
             </figcaption>
           </Reveal>
         </div>
+      </section>
+
+      {/* ── 표준 적용 ──
+          앞 섹션이 «표준을 안 지키면 이렇게 된다»를 보였으니, 여기서
+          «그래서 어떤 표준을 어떻게 썼는가»로 잇는다. 2026 ICT 표준
+          챌린지 출품작이라 이 부분이 랜딩에서 읽히지 않으면 안 된다. */}
+      <section id="standards" className="rw-lp-section rw-lp-section--sunken">
+        <Reveal className="rw-lp-section__head">
+          <h2>TTA 표준을 이렇게 적용했습니다</h2>
+          <p>
+            어디까지 구현했고 어디부터가 설계 참조인지 구분해 적었습니다.
+          </p>
+        </Reveal>
+
+        <div className="rw-lp-std">
+          <Reveal as="ul" className="rw-lp-std__list">
+            {STANDARDS.map((st) => (
+              <li key={st.id}>
+                <div className="rw-lp-std__head">
+                  <code>{st.id}</code>
+                  <span className={`rw-lp-std__tag rw-lp-std__tag--${st.tone}`}>
+                    {st.status}
+                  </span>
+                </div>
+                <p className="rw-lp-std__name">{st.name}</p>
+                <p className="rw-lp-std__role">{st.role}</p>
+              </li>
+            ))}
+          </Reveal>
+
+          <Reveal className="rw-lp-std__sample" delay={120}>
+            <p className="rw-lp-label">실제 응답</p>
+            <p className="rw-lp-std__path">
+              <code>GET /ngsi-ld/v1/entities/…</code>
+            </p>
+            <pre>
+              <code>{NGSI_SAMPLE}</code>
+            </pre>
+            <p className="rw-lp-std__note">
+              속성마다 종류(<code>Property</code> · <code>GeoProperty</code>)를
+              밝히는 NGSI-LD 정규 표현법입니다. 조회 API는 로그인 없이 열려
+              있어 표준 준수를 직접 확인하실 수 있습니다.
+            </p>
+          </Reveal>
+        </div>
+
+        <Reveal className="rw-lp-std__foot" delay={200}>
+          <p>
+            공간 연계는 지정 134선에 대응 표준이 없어 ITS 국가교통정보센터의
+            전국표준노드링크로 구현했습니다. TTA 표준이 아니므로 위 목록에
+            넣지 않았습니다.
+          </p>
+        </Reveal>
       </section>
 
       {/* ── 실증 ── */}
