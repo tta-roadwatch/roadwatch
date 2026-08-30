@@ -1,0 +1,577 @@
+/* 랜딩 — 로그인 앞 공개 페이지.
+ *
+ * 업무 화면(AppShell)과 목적이 다르다. 업무 화면은 정보 밀도가 높아야 하고
+ * 랜딩은 한 화면에 하나씩 읽혀야 한다. 그래서 여백과 글자 크기를 따로 잡되,
+ * 색·서체·radius 는 같은 KRDS 토큰을 쓴다 — 두 화면이 다른 서비스처럼
+ * 보이면 안 된다.
+ */
+
+.rw-lp {
+  background: var(--rw-surface);
+  color: var(--rw-text);
+}
+
+/* ── 공통 ─────────────────────────────────────────────── */
+
+.rw-lp-section {
+  padding: 96px var(--rw-gutter);
+}
+
+.rw-lp-section--sunken {
+  background: var(--rw-surface-sunken);
+}
+
+.rw-lp-section__head {
+  max-width: var(--rw-max-width);
+  margin: 0 auto 48px;
+  text-align: center;
+}
+
+.rw-lp-section__head h2 {
+  font-size: 32px;
+  font-weight: var(--rw-weight-bold);
+  line-height: 1.4;
+  margin: 0 0 12px;
+}
+
+.rw-lp-section__head p {
+  font-size: var(--rw-size-body);
+  color: var(--rw-text-secondary);
+  margin: 0;
+}
+
+.rw-lp-label {
+  font-size: var(--rw-size-aux);
+  font-weight: var(--rw-weight-bold);
+  color: var(--rw-primary-text);
+  margin: 0 0 8px;
+}
+
+.rw-lp-eyebrow {
+  display: inline-block;
+  font-size: var(--rw-size-aux);
+  font-weight: var(--rw-weight-bold);
+  color: var(--rw-primary-text);
+  background: var(--rw-primary-weak);
+  border-radius: 999px;
+  padding: 6px 14px;
+  margin: 0 0 20px;
+}
+
+/* ── 버튼 ─────────────────────────────────────────────── */
+
+.rw-lp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 24px;
+  border-radius: var(--rw-radius-md);
+  font-size: var(--rw-size-body);
+  font-weight: var(--rw-weight-bold);
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.rw-lp-btn--primary {
+  background: var(--rw-primary);
+  color: var(--rw-text-on-fill);
+}
+.rw-lp-btn--primary:hover {
+  background: var(--rw-primary-hover);
+}
+
+.rw-lp-btn--ghost {
+  background: var(--rw-surface);
+  color: var(--rw-text);
+  border-color: var(--rw-border-strong);
+}
+.rw-lp-btn--ghost:hover {
+  background: var(--rw-surface-sunken);
+}
+
+/* CTA 배너 안 — 파란 바탕 위라 색이 반대로 간다 */
+.rw-lp-btn--onfill {
+  background: var(--rw-surface);
+  color: var(--rw-primary-text);
+}
+.rw-lp-btn--onfill:hover {
+  background: var(--rw-primary-weak);
+}
+
+.rw-lp-btn--sm {
+  padding: 9px 18px;
+  font-size: var(--rw-size-aux);
+  background: var(--rw-primary);
+  color: var(--rw-text-on-fill);
+}
+.rw-lp-btn--sm:hover {
+  background: var(--rw-primary-hover);
+}
+
+.rw-lp-btn:focus-visible,
+.rw-lp-nav a:focus-visible,
+.rw-lp-faq__item summary:focus-visible {
+  outline: 2px solid var(--rw-focus);
+  outline-offset: 2px;
+}
+
+/* ── 헤더 ─────────────────────────────────────────────── */
+
+.rw-lp-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--rw-surface);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.15s;
+}
+.rw-lp-header.is-scrolled {
+  border-bottom-color: var(--rw-border);
+}
+
+.rw-lp-header__inner {
+  max-width: var(--rw-max-width);
+  margin: 0 auto;
+  padding: 0 var(--rw-gutter);
+  height: 78px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.rw-lp-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--rw-size-body);
+  font-weight: var(--rw-weight-bold);
+  color: var(--rw-text);
+  text-decoration: none;
+}
+
+.rw-lp-nav {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.rw-lp-nav a {
+  padding: 8px 14px;
+  border-radius: var(--rw-radius-sm);
+  font-size: var(--rw-size-aux);
+  color: var(--rw-text-secondary);
+  text-decoration: none;
+}
+.rw-lp-nav a:hover {
+  color: var(--rw-text);
+  background: var(--rw-surface-sunken);
+}
+
+/* ── Hero ─────────────────────────────────────────────── */
+
+.rw-lp-hero {
+  padding: 80px var(--rw-gutter) 0;
+  /* 배경 사진 대신 옅은 그라데이션. 사진을 깔면 글자 대비를 따로 관리해야
+     하는데, 정부 서비스 화면에서 대비가 흔들리는 건 피하고 싶다. */
+  background:
+    radial-gradient(
+      1200px 400px at 50% -80px,
+      var(--rw-primary-weak),
+      transparent 70%
+    ),
+    var(--rw-surface);
+}
+
+.rw-lp-hero__inner {
+  max-width: 860px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.rw-lp-hero__title {
+  font-size: 48px;
+  line-height: 1.32;
+  font-weight: var(--rw-weight-bold);
+  letter-spacing: -0.02em;
+  margin: 0 0 20px;
+}
+
+.rw-lp-hero__lead {
+  font-size: 19px;
+  line-height: 1.65;
+  color: var(--rw-text-secondary);
+  margin: 0 auto 32px;
+  max-width: 640px;
+}
+
+.rw-lp-hero__cta {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ── 지표 ─────────────────────────────────────────────── */
+
+.rw-lp-stats {
+  max-width: var(--rw-max-width);
+  margin: 72px auto 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.rw-lp-stat {
+  background: var(--rw-surface);
+  border: 1px solid var(--rw-border);
+  border-radius: var(--rw-radius-lg);
+  padding: 24px;
+  text-align: center;
+}
+
+/* 점검 권고 구간은 이 서비스가 내놓는 결과물이라 강조한다 */
+.rw-lp-stat--hl {
+  border-color: var(--rw-intermittent-border);
+  background: var(--rw-intermittent-weak);
+}
+.rw-lp-stat--hl .rw-lp-stat__value {
+  color: var(--rw-intermittent-text);
+}
+
+.rw-lp-stat__label {
+  font-size: var(--rw-size-aux);
+  color: var(--rw-text-secondary);
+  margin: 0 0 6px;
+}
+
+.rw-lp-stat__value {
+  font-size: 28px;
+  font-weight: var(--rw-weight-bold);
+  margin: 0;
+}
+
+/* ── 문제 제기 ────────────────────────────────────────── */
+
+.rw-lp-problem {
+  max-width: var(--rw-max-width);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 24px;
+}
+
+.rw-lp-problem__now,
+.rw-lp-problem__next {
+  border: 1px solid var(--rw-border);
+  border-radius: var(--rw-radius-lg);
+  padding: 32px;
+  background: var(--rw-surface);
+}
+
+.rw-lp-problem__now {
+  background: var(--rw-surface-sunken);
+}
+.rw-lp-problem__now .rw-lp-label {
+  color: var(--rw-text-muted);
+}
+
+.rw-lp-problem__next {
+  border-color: var(--rw-primary);
+}
+
+.rw-lp-problem ul {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 12px;
+}
+
+.rw-lp-problem li {
+  font-size: var(--rw-size-body);
+  line-height: 1.6;
+}
+
+.rw-lp-problem__arrow {
+  font-size: 28px;
+  color: var(--rw-text-muted);
+}
+
+/* ── 기능 ─────────────────────────────────────────────── */
+
+.rw-lp-features {
+  max-width: var(--rw-max-width);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.rw-lp-feature {
+  background: var(--rw-surface);
+  border: 1px solid var(--rw-border);
+  border-radius: var(--rw-radius-lg);
+  padding: 32px;
+}
+
+.rw-lp-feature__step {
+  font-size: var(--rw-size-aux);
+  font-weight: var(--rw-weight-bold);
+  color: var(--rw-primary-text);
+  margin: 0 0 12px;
+}
+
+.rw-lp-feature h3 {
+  font-size: 21px;
+  font-weight: var(--rw-weight-bold);
+  margin: 0 0 12px;
+  line-height: 1.45;
+}
+
+.rw-lp-feature__body {
+  font-size: var(--rw-size-body);
+  line-height: 1.7;
+  color: var(--rw-text-secondary);
+  margin: 0 0 20px;
+}
+
+.rw-lp-feature__tag {
+  display: inline-block;
+  font-family: var(--rw-font-mono);
+  font-size: 13px;
+  color: var(--rw-text-muted);
+  background: var(--rw-surface-sunken);
+  border-radius: var(--rw-radius-sm);
+  padding: 6px 10px;
+  margin: 0;
+}
+
+/* ── 실증 ─────────────────────────────────────────────── */
+
+.rw-lp-evidence {
+  max-width: var(--rw-max-width);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 20px;
+}
+
+.rw-lp-evidence__main {
+  border: 1px solid var(--rw-border);
+  border-radius: var(--rw-radius-lg);
+  padding: 40px;
+  background: var(--rw-surface);
+}
+
+.rw-lp-evidence__rates {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 0 0 20px;
+}
+
+.rw-lp-evidence__rates span {
+  font-size: 44px;
+  font-weight: var(--rw-weight-bold);
+  color: var(--rw-intermittent-text);
+  line-height: 1.1;
+}
+
+.rw-lp-evidence__rates em {
+  font-style: normal;
+  font-size: var(--rw-size-aux);
+  color: var(--rw-text-muted);
+}
+
+.rw-lp-evidence__note {
+  font-size: var(--rw-size-body);
+  line-height: 1.7;
+  color: var(--rw-text-secondary);
+  margin: 0;
+}
+
+.rw-lp-evidence__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.rw-lp-evidence__list li {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  border: 1px solid var(--rw-border);
+  border-radius: var(--rw-radius-md);
+  padding: 18px 24px;
+  background: var(--rw-surface);
+}
+
+.rw-lp-evidence__list strong {
+  font-size: 21px;
+  font-weight: var(--rw-weight-bold);
+  min-width: 96px;
+}
+
+.rw-lp-evidence__list span {
+  font-size: var(--rw-size-aux);
+  color: var(--rw-text-secondary);
+}
+
+/* ── CTA ──────────────────────────────────────────────── */
+
+.rw-lp-cta {
+  background: var(--rw-primary);
+  color: var(--rw-text-on-fill);
+  text-align: center;
+  padding: 80px var(--rw-gutter);
+}
+
+.rw-lp-cta h2 {
+  font-size: 36px;
+  font-weight: var(--rw-weight-bold);
+  margin: 0 0 12px;
+}
+
+.rw-lp-cta p {
+  font-size: var(--rw-size-body);
+  margin: 0 0 32px;
+  opacity: 0.92;
+}
+
+/* ── FAQ ──────────────────────────────────────────────── */
+
+.rw-lp-faq {
+  max-width: 960px;
+  margin: 0 auto;
+  display: grid;
+  gap: 12px;
+}
+
+.rw-lp-faq__item {
+  border: 1px solid var(--rw-border);
+  border-radius: var(--rw-radius-lg);
+  background: var(--rw-surface);
+  overflow: hidden;
+}
+
+.rw-lp-faq__item summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 28px;
+  font-size: 19px;
+  font-weight: var(--rw-weight-bold);
+  cursor: pointer;
+  list-style: none;
+}
+.rw-lp-faq__item summary::-webkit-details-marker {
+  display: none;
+}
+.rw-lp-faq__item summary:hover {
+  background: var(--rw-surface-sunken);
+}
+
+/* +/− 표시. 아이콘 파일 없이 CSS 로 그린다 */
+.rw-lp-faq__mark {
+  position: relative;
+  flex: none;
+  width: 20px;
+  height: 20px;
+}
+.rw-lp-faq__mark::before,
+.rw-lp-faq__mark::after {
+  content: "";
+  position: absolute;
+  inset: 50% 0 auto 0;
+  height: 2px;
+  background: var(--rw-text-muted);
+  transition: transform 0.15s;
+}
+.rw-lp-faq__mark::after {
+  transform: rotate(90deg);
+}
+.rw-lp-faq__item[open] .rw-lp-faq__mark::after {
+  transform: rotate(0deg);
+}
+
+.rw-lp-faq__item p {
+  margin: 0;
+  padding: 0 28px 28px;
+  font-size: var(--rw-size-body);
+  line-height: 1.75;
+  color: var(--rw-text-secondary);
+}
+
+/* ── 푸터 ─────────────────────────────────────────────── */
+
+.rw-lp-footer {
+  border-top: 1px solid var(--rw-border);
+  background: var(--rw-surface-sunken);
+  padding: 48px var(--rw-gutter);
+}
+
+.rw-lp-footer__inner {
+  max-width: var(--rw-max-width);
+  margin: 0 auto;
+  display: grid;
+  gap: 8px;
+}
+
+.rw-lp-footer p {
+  margin: 0;
+  font-size: var(--rw-size-aux);
+  color: var(--rw-text-secondary);
+}
+
+.rw-lp-footer__brand {
+  font-weight: var(--rw-weight-bold);
+  color: var(--rw-text) !important;
+}
+
+.rw-lp-footer__src {
+  color: var(--rw-text-muted) !important;
+}
+
+/* ── 좁은 화면 ────────────────────────────────────────── */
+
+@media (max-width: 1024px) {
+  .rw-lp-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .rw-lp-problem {
+    grid-template-columns: 1fr;
+  }
+  .rw-lp-problem__arrow {
+    transform: rotate(90deg);
+    text-align: center;
+  }
+  .rw-lp-features,
+  .rw-lp-evidence {
+    grid-template-columns: 1fr;
+  }
+  .rw-lp-nav {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .rw-lp-section {
+    padding: 64px var(--rw-gutter);
+  }
+  .rw-lp-hero__title {
+    font-size: 34px;
+  }
+  .rw-lp-section__head h2,
+  .rw-lp-cta h2 {
+    font-size: 26px;
+  }
+  .rw-lp-stats {
+    grid-template-columns: 1fr;
+  }
+}

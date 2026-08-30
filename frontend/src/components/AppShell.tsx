@@ -6,7 +6,7 @@ import { Logo } from "./Logo";
 
 /** 상단 메뉴. 목업의 5개 대분류를 그대로 따른다. */
 const MENU = [
-  { to: "/", label: "대시보드", end: true },
+  { to: "/dashboard", label: "대시보드", end: true },
   { to: "/data", label: "데이터" },
   { to: "/map", label: "취약도로 지도" },
   { to: "/inspections", label: "점검 관리" },
@@ -21,7 +21,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="rw-shell">
       <header className="rw-gnb">
         <div className="rw-gnb__inner">
-          <Link to="/" className="rw-gnb__brand">
+          <Link to="/dashboard" className="rw-gnb__brand">
             <Logo />
             RoadWatch
           </Link>

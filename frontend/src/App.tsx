@@ -11,6 +11,7 @@ import { CellDetail } from "./pages/CellDetail";
 import { Comparison } from "./pages/Comparison";
 import { Inspections } from "./pages/Inspections";
 import { Standards } from "./pages/Standards";
+import { Landing } from "./pages/Landing";
 import { Login } from "./pages/Login";
 
 export function App() {
@@ -18,7 +19,9 @@ export function App() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-        {/* 로그인은 상단 메뉴 없이 단독으로 뜬다 */}
+        {/* 랜딩과 로그인은 업무 화면 껍데기(상단 메뉴) 없이 단독으로 뜬다.
+            랜딩은 자체 헤더를 갖고, 서비스를 처음 보는 사람을 위한 화면이다. */}
+        <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
 
         <Route
@@ -26,7 +29,7 @@ export function App() {
           element={
             <AppShell>
               <Routes>
-                <Route path="/" element={<Dashboard />} />
+                <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/data" element={<Datasets />} />
                 <Route path="/data/normalization" element={<Normalization />} />
                 <Route path="/data/quality" element={<Quality />} />
@@ -38,7 +41,7 @@ export function App() {
                 />
                 <Route path="/inspections" element={<Inspections />} />
                 <Route path="/standards" element={<Standards />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>
             </AppShell>
           }

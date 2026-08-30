@@ -28,7 +28,7 @@ export function Login() {
   const [error, setError] = useState<string | null>(null);
 
   if (restoring) return <Loading label="로그인 상태를 확인하는 중입니다" />;
-  if (user) return <Navigate to="/" replace />;
+  if (user) return <Navigate to="/dashboard" replace />;
 
   const run = async (fn: () => Promise<void>) => {
     setBusy(true);
