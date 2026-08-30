@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 
 import { api } from "../api/client";
 import { useApi } from "../api/useApi";
@@ -20,6 +20,13 @@ import { Loading } from "../components/States";
 export function Login() {
   const { user, restoring, login, demoLogin } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // 링크를 받아 열었다가 로그인으로 튕긴 경우 원래 가려던 곳으로 돌려보낸다.
+  // 없으면 대시보드가 기본이다.
+  const from =
+    (location.state as { from?: { pathname: string } } | null)?.from?.pathname ??
+    "/dashboard";
   const config = useApi(() => api.authConfig(), []);
 
   const [username, setUsername] = useState("");
@@ -28,14 +35,14 @@ export function Login() {
   const [error, setError] = useState<string | null>(null);
 
   if (restoring) return <Loading label="로그인 상태를 확인하는 중입니다" />;
-  if (user) return <Navigate to="/dashboard" replace />;
+  if (user) return <Navigate to={from} replace />;
 
   const run = async (fn: () => Promise<void>) => {
     setBusy(true);
     setError(null);
     try {
       await fn();
-      navigate("/", { replace: true });
+      navigate(from, { replace: true });
     } catch (e) {
       setError(e instanceof Error ? e.message : "로그인에 실패했습니다");
     } finally {
@@ -51,15 +58,16 @@ export function Login() {
   return (
     <div className="rw-login">
       <div className="rw-login__panel">
-        <div className="rw-login__brand">
+        <Link to="/" className="rw-login__brand">
           <Logo size={40} />
           <div>
             {/* 서비스명만 두면 처음 보는 사람이 무슨 서비스인지 알 수 없다.
-                로그인은 외부에서 처음 닿는 화면이라 부제에 설명을 남긴다. */}
+                로그인은 외부에서 처음 닿는 화면이라 부제에 설명을 남긴다.
+                로고를 누르면 랜딩으로 나간다 — 막다른 화면이 아니다. */}
             <h1 className="rw-card-title">RoadWatch</h1>
             <p className="rw-aux">자율주행 취약도로 탐지 · 도로관리 담당자용</p>
           </div>
-        </div>
+        </Link>
 
         <form className="rw-stack" onSubmit={submit}>
           <div className="rw-field">
@@ -120,9 +128,13 @@ export function Login() {
           )}
         </form>
 
-        {config.data && (
+        {/* 서버 notice 는 API 관점의 설명("조회 API 는 열려 있다")이라 이 화면에
+            그대로 두면 "그럼 왜 로그인하지?"가 된다. 화면은 로그인 뒤에 있고
+            API 는 공개인 것이 맞지만, 그 구분은 표준·API 화면에서 다룬다. */}
+        {config.data?.demo_login_available && (
           <p className="rw-note" style={{ marginTop: "var(--rw-space-6)" }}>
-            {config.data.notice}
+            계정이 없으시면 «테스트 로그인»으로 모든 화면을 둘러보실 수 있습니다.
+            보이는 분석 결과는 실제 개방데이터로 산출한 값입니다.
           </p>
         )}
       </div>

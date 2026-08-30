@@ -991,3 +991,18 @@
 .rw-map--short {
   height: 380px;
 }
+
+/* 로그인 화면의 브랜드는 랜딩으로 나가는 링크다. 링크 티가 나되
+   제목처럼 보여야 하므로 밑줄 대신 커서와 호버로만 알린다. */
+a.rw-login__brand {
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--rw-radius-md);
+}
+a.rw-login__brand:hover h1 {
+  color: var(--rw-primary-text);
+}
+a.rw-login__brand:focus-visible {
+  outline: 2px solid var(--rw-focus);
+  outline-offset: 4px;
+}

@@ -46,7 +46,11 @@ export function AppShell({ children }: { children: ReactNode }) {
               <button
                 type="button"
                 className="rw-btn rw-btn--secondary rw-btn--sm"
-                onClick={logout}
+                onClick={() => {
+                  // 로그아웃하면 업무 화면에 남지 않고 랜딩으로 나간다
+                  logout();
+                  navigate("/", { replace: true });
+                }}
               >
                 로그아웃
               </button>

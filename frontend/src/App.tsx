@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import { AuthProvider } from "./auth/AuthContext";
 import { AppShell } from "./components/AppShell";
+import { RequireAuth } from "./components/RequireAuth";
 import { Dashboard } from "./pages/Dashboard";
 import { Datasets } from "./pages/Datasets";
 import { Normalization } from "./pages/Normalization";
@@ -27,7 +28,8 @@ export function App() {
         <Route
           path="*"
           element={
-            <AppShell>
+            <RequireAuth>
+              <AppShell>
               <Routes>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/data" element={<Datasets />} />
@@ -43,7 +45,8 @@ export function App() {
                 <Route path="/standards" element={<Standards />} />
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>
-            </AppShell>
+              </AppShell>
+            </RequireAuth>
           }
         />
         </Routes>
