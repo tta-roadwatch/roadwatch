@@ -20,6 +20,16 @@ _CODEBOOKS = {
     "inverted": {"name": "inverted", "abnormal": INVERTED.abnormal},
 }
 
+#: BSM 좌표 유효성 실측값. driving_records 를 세지 않는다 — 시드 DB 는 세션당
+#: 1,000건 샘플이라 100.0% 가 나오고, 시연 화면에 틀린 숫자가 뜬다. 실제로 겪었다.
+#: 이 값은 인수 기준(run.py)이 지키는 수치와 같은 출처다.
+COORD_VALIDITY = {
+    "valid": 39_546,
+    "total": 40_010,
+    "rate": round(39_546 / 40_010, 4),
+    "note": "BSM 전체 40,010건 중 39,546건이 유효 좌표입니다.",
+}
+
 NORMALIZATION = {
     "source": VERIFIED["source"],
     "without_codebook": VERIFIED["emergency_without_codebook"],

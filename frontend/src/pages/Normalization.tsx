@@ -30,12 +30,13 @@ export function Normalization() {
   // 지도는 부가 레이어다. 실패해도 숫자와 JSON 대비는 그대로 보여야 한다.
   const map = useApi(
     async () => {
-      const [before, after, bounds] = await Promise.all([
+      const [before, after, bounds, roads] = await Promise.all([
         api.geoNormalization(false),
         api.geoNormalization(true),
         api.geoBounds().catch(() => null),
+        api.geoRoadLinks(true).catch(() => null),
       ]);
-      return { before, after, bounds };
+      return { before, after, bounds, roads };
     },
     [],
   );
@@ -122,7 +123,7 @@ export function Normalization() {
           전달한다. 토글 하나가 두 표현을 동시에 뒤집는다. */}
       {map.data && (
         <Card
-          title="정규화가 판정을 바꾸는 범위"
+          title={applied ? "정규화 후 남은 이상" : "정규화 없이 판정한 결과"}
           aside={
             applied
               ? `${num(map.data.after.features.length)}곳`
@@ -132,13 +133,14 @@ export function Normalization() {
         >
           <NormalizationMap
             points={applied ? map.data.after : map.data.before}
+            roads={map.data.roads}
             bounds={map.data.bounds}
             normalized={applied}
           />
           <p className="rw-note" style={{ marginTop: "var(--rw-space-4)" }}>
             {applied
               ? "세션별 코드북을 적용하면 실제 센서 이상 3건만 남습니다."
-              : "같은 코드 체계를 모든 세션에 가정하면 판교 전 구간이 비상정지로 판정됩니다."}
+              : "코드 체계가 반대인 세션의 주행 전 구간이 비상정지로 칠해집니다. 차가 멈춘 적이 없는데도 경로 전체가 이상으로 판정된 것입니다."}
           </p>
         </Card>
       )}

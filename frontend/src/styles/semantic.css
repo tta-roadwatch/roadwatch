@@ -53,11 +53,15 @@
   /* 판정 없음 — 분류가 붙지 않은 격자 */
   --rw-unranked: var(--krds-color-light-gray-30);
 
-  /* 주행 궤적 — 분류 색(warning·success)과 겹치지 않게 primary 계열로 가른다.
-     세션을 구분하는 게 목적이지 심각도를 뜻하지 않는다. */
-  --rw-traj-1: var(--krds-color-light-primary-50);
-  --rw-traj-2: var(--krds-color-light-primary-70);
-  --rw-traj-3: var(--krds-color-light-primary-30);
+  /* 주행 궤적 — 분류 색(warning·success)과 겹치지 않게 파랑 계열로 가른다.
+     세션을 구분하는 게 목적이지 심각도를 뜻하지 않는다.
+
+     기획서가 재현성 근거로 짝지은 05-16 과 08-05 를 가장 대비되는 두 색
+     (밝은 파랑 · 짙은 남색)으로 두고, 07-25 는 중간 톤을 준다. primary-30 은
+     옅은 배경에서 선이 사라져 쓰지 않는다. */
+  --rw-traj-1: var(--krds-color-light-primary-50);   /* 2022-05-16 */
+  --rw-traj-2: var(--krds-color-light-secondary-50); /* 2022-07-25 */
+  --rw-traj-3: var(--krds-color-light-primary-80);   /* 2022-08-05 */
   --rw-traj-other: var(--krds-color-light-gray-50);
   --rw-unranked-weak: var(--krds-color-light-gray-5);
   --rw-unranked-text: var(--krds-color-light-gray-60);

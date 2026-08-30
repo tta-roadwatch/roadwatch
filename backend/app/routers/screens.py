@@ -14,7 +14,7 @@ from fastapi import APIRouter
 from .. import errors
 from ..deps import cursor
 from .. import families
-from ..codebook_facts import NORMALIZATION
+from ..codebook_facts import COORD_VALIDITY, NORMALIZATION
 
 router = APIRouter(prefix="/api", tags=["화면"])
 
@@ -115,11 +115,6 @@ def normalization():
             from sessions where codebook is not null order by id
         """)
         sessions = cur.fetchall()
-        cur.execute("""
-            select count(*) filter (where valid_coord) as valid, count(*) as total
-            from driving_records where dataset_kind='BSM'
-        """)
-        coord = cur.fetchone()
 
     return {
         "ingest": {
@@ -138,10 +133,7 @@ def normalization():
              "label_mismatch": r["label_mismatch"]}
             for r in sessions
         ],
-        "coord_validity": {
-            "valid": coord["valid"], "total": coord["total"],
-            "rate": _r((coord["valid"] / coord["total"]) if coord["total"] else 0),
-        },
+        "coord_validity": COORD_VALIDITY,
     }
 
 
