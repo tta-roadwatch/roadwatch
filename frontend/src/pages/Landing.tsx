@@ -106,6 +106,21 @@ export function Landing() {
           </div>
         </div>
 
+        {/* 제품 미리보기. 스톡 사진 대신 실제 화면을 쓴다 — "이런 서비스입니다"가
+            한 번에 읽히고, 동작하는 물건이라는 증거도 된다. */}
+        <figure className="rw-lp-shot">
+          <img
+            src="/shots/map.png"
+            alt="취약도로 지도 화면. 판교 도로망 위에 40m 격자가 분류색으로 표시되고, 세 번의 주행 궤적이 겹쳐 그려져 있다."
+            width={1680}
+            height={1050}
+            loading="eager"
+          />
+          <figcaption>
+            실제 화면 — 40m 격자와 서로 다른 세 주행의 궤적을 겹쳐 봅니다
+          </figcaption>
+        </figure>
+
         <dl className="rw-lp-stats">
           <Stat value={num(s.records)} label="분석한 주행 기록" />
           <Stat value={`${s.sessions}회`} label="서로 다른 주행 세션" />
@@ -160,6 +175,50 @@ export function Landing() {
               <p className="rw-lp-feature__tag">{f.tag}</p>
             </article>
           ))}
+        </div>
+      </section>
+
+      {/* ── 정규화 전·후 ── */}
+      <section className="rw-lp-section">
+        <div className="rw-lp-section__head">
+          <h2>표준을 지키지 않으면 이렇게 됩니다</h2>
+          <p>
+            같은 데이터, 같은 지도입니다. 코드 체계를 맞췄는지 아닌지의 차이입니다.
+          </p>
+        </div>
+
+        <div className="rw-lp-compare">
+          <figure>
+            <img
+              src="/shots/norm-before.png"
+              alt="정규화 전 지도. 주행 경로 전 구간이 비상정지 표시로 굵게 칠해져 있다."
+              width={1680}
+              height={570}
+              loading="lazy"
+            />
+            <figcaption>
+              <span className="rw-lp-compare__tag rw-lp-compare__tag--wrong">
+                정규화 없음
+              </span>
+              주행 전 구간이 «비상정지»로 판정됩니다. 차가 멈춘 적이 없는데도
+              15,588건이 이상으로 잡힙니다.
+            </figcaption>
+          </figure>
+
+          <figure>
+            <img
+              src="/shots/norm-after.png"
+              alt="정규화 후 지도. 표시가 세 개만 남아 있다."
+              width={1680}
+              height={570}
+              loading="lazy"
+            />
+            <figcaption>
+              <span className="rw-lp-compare__tag">표준 정규화 적용</span>
+              세션별 코드북을 적용하면 실제 센서 이상 3건만 남습니다.
+              오판 15,585건이 사라집니다.
+            </figcaption>
+          </figure>
         </div>
       </section>
 
@@ -291,7 +350,7 @@ function LandingHeader() {
       <div className="rw-lp-header__inner">
         <Link to="/" className="rw-lp-brand">
           <Logo size={30} />
-          <span>자율주행 취약도로 탐지</span>
+          <span>RoadWatch</span>
         </Link>
 
         <nav className="rw-lp-nav" aria-label="페이지 안내">
@@ -314,7 +373,7 @@ function LandingFooter() {
   return (
     <footer className="rw-lp-footer">
       <div className="rw-lp-footer__inner">
-        <p className="rw-lp-footer__brand">자율주행 취약도로 탐지 · RoadWatch</p>
+        <p className="rw-lp-footer__brand">RoadWatch · 자율주행 취약도로 탐지</p>
         <p>
           2026 ICT 표준 챌린지 공모전 출품작 · 판교 제로시티 개방데이터 기반
         </p>
