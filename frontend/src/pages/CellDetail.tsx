@@ -291,24 +291,22 @@ function ReportCard({ cellKey }: { cellKey: string }) {
   };
 
   return (
-    <Card
-      title="AI 점검 리포트 초안"
-      aside={
-        report ? (
-          <span className="rw-badge rw-badge--measured">
-            {report.generated_by === "claude"
-              ? `생성형 AI · ${report.model}`
-              : "규칙 기반 템플릿"}
-          </span>
-        ) : (
-          "생성형 AI"
-        )
-      }
-    >
+    <Card title="AI 점검 리포트 초안">
       {report ? (
         <div className="rw-stack-sm">
+          {/* 본문 끝에 면책 문구가 이미 들어 있다. 서버가 disclaimer 로도
+              같은 문장을 주는데 둘 다 그리면 화면에 두 번 나온다. */}
           <p style={{ whiteSpace: "pre-wrap" }}>{report.text}</p>
-          <p className="rw-note">{report.disclaimer}</p>
+
+          {/* 무엇이 이 문장을 썼는지는 밝히되, 머리에 배지로 세우지 않는다.
+              키가 없으면 서버가 템플릿으로 대체하므로 둘을 구분해야
+              "생성형 AI 로 만들었다"는 설명이 화면과 어긋나지 않는다. */}
+          <p className="rw-aux rw-muted">
+            {report.generated_by === "claude"
+              ? `생성형 AI(${report.model})로 작성한 초안입니다.`
+              : "규칙 기반 템플릿으로 작성한 초안입니다."}
+          </p>
+
           <button
             type="button"
             className="rw-btn rw-btn--secondary rw-btn--sm"
