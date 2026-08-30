@@ -444,57 +444,62 @@ html:has(.rw-lp) {
 
 .rw-lp-evidence__rates {
   display: grid;
-  gap: 24px;
-  margin: 0 0 28px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin: 4px 0 28px;
 }
 
-.rw-lp-rate__head {
+.rw-lp-dial {
+  position: relative;
+  text-align: center;
+}
+
+.rw-lp-dial__svg {
+  display: block;
+  width: 100%;
+  max-width: 168px;
+  margin: 0 auto;
+}
+
+/* 값은 원 한가운데. SVG <text> 대신 HTML 을 겹쳐 서체·크기 토큰을 그대로 쓴다 */
+.rw-lp-dial__center {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: min(168px, 100%);
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 10px;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
 }
 
-.rw-lp-rate__date {
-  font-size: var(--rw-size-body);
-  color: var(--rw-text-secondary);
-}
-
-.rw-lp-rate__value {
-  font-size: 40px;
+.rw-lp-dial__value {
+  font-size: 30px;
   font-weight: var(--rw-weight-bold);
   color: var(--rw-intermittent-text);
   line-height: 1;
 }
 
-.rw-lp-rate__bar {
-  display: block;
-  height: 10px;
-  border-radius: 999px;
-  background: var(--rw-surface-sunken);
-  overflow: hidden;
+.rw-lp-dial__date {
+  margin: 14px 0 2px;
+  font-size: var(--rw-size-body);
+  color: var(--rw-text-secondary);
 }
 
-.rw-lp-rate__bar > span {
-  display: block;
-  height: 100%;
-  border-radius: 999px;
-  background: var(--rw-intermittent-text);
-  /* 시야에 들어올 때 0에서 늘어난다. 두 막대가 나란히 자라며 길이가
-     비슷하다는 게 눈에 들어온다. */
-  transition: width 0.9s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.rw-lp-rate__counts {
-  display: block;
-  margin-top: 8px;
+.rw-lp-dial__counts {
+  margin: 0;
   font-size: var(--rw-size-aux);
   color: var(--rw-text-muted);
 }
 
+/* 시야에 들어오면 12시부터 시계 방향으로 채워진다 */
+.rw-lp-dial__svg circle:last-of-type {
+  transition: stroke-dashoffset 1.1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .rw-lp-rate__bar > span {
+  .rw-lp-dial__svg circle:last-of-type {
     transition: none;
   }
 }

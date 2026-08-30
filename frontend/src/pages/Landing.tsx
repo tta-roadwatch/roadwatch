@@ -256,8 +256,8 @@ export function Landing() {
                 세로로 세우고 막대를 붙여 «비슷하다»가 눈에 보이게 한다 —
                 이 섹션이 말하려는 것이 재현성이기 때문이다. */}
             <div className="rw-lp-evidence__rates">
-              <RateRow date="2022-05-16" value={81.3} counts="52 / 64초" />
-              <RateRow date="2022-08-05" value={87.2} counts="116 / 133초" />
+              <RateDial date="2022-05-16" value={81.3} counts="52 / 64초" />
+              <RateDial date="2022-08-05" value={87.2} counts="116 / 133초" />
             </div>
 
             <p className="rw-lp-evidence__note">
@@ -345,11 +345,14 @@ function StatBar({
   );
 }
 
-/** 한 주행의 이벤트율. 막대가 시야에 들어올 때 늘어난다.
+/** 한 주행의 이벤트율. 원이 시야에 들어올 때 채워진다.
  *
- * 값을 글자로만 두면 81.3 과 87.2 의 «비슷함»이 머리로만 이해된다.
- * 막대 길이가 나란히 놓이면 눈으로 바로 읽힌다. */
-function RateRow({
+ * 원형은 각도 비교라 막대보다 정밀도가 떨어진다 — 81.3% 와 87.2% 의 차이는
+ * 21도에 불과하다. 다만 이 카드가 말하려는 건 «둘 다 비슷하게 높다»는
+ * 인상이고, 나란히 놓인 두 원이 비슷하게 차 있는 모습이 그걸 전한다.
+ * 정확한 값은 원 안에 글자로 둔다.
+ */
+function RateDial({
   date,
   value,
   counts,
@@ -359,16 +362,41 @@ function RateRow({
   counts: string;
 }) {
   const { ref, inView } = useInView<HTMLDivElement>("-40px");
+  const R = 52;
+  const C = 2 * Math.PI * R;
+
   return (
-    <div className="rw-lp-rate" ref={ref}>
-      <div className="rw-lp-rate__head">
-        <span className="rw-lp-rate__date">{date}</span>
-        <span className="rw-lp-rate__value">{value}%</span>
+    <div className="rw-lp-dial" ref={ref}>
+      <svg viewBox="0 0 120 120" className="rw-lp-dial__svg" aria-hidden="true">
+        <circle
+          cx="60"
+          cy="60"
+          r={R}
+          fill="none"
+          stroke="var(--rw-surface-sunken)"
+          strokeWidth="13"
+        />
+        <circle
+          cx="60"
+          cy="60"
+          r={R}
+          fill="none"
+          stroke="var(--rw-intermittent-text)"
+          strokeWidth="13"
+          strokeLinecap="round"
+          strokeDasharray={C}
+          /* 12시 방향에서 시작하도록 90도 돌린다 */
+          transform="rotate(-90 60 60)"
+          style={{ strokeDashoffset: inView ? C * (1 - value / 100) : C }}
+        />
+      </svg>
+
+      <div className="rw-lp-dial__center">
+        <span className="rw-lp-dial__value">{value}%</span>
       </div>
-      <div className="rw-lp-rate__bar">
-        <span style={{ width: inView ? `${value}%` : 0 }} />
-      </div>
-      <span className="rw-lp-rate__counts">{counts}</span>
+
+      <p className="rw-lp-dial__date">{date}</p>
+      <p className="rw-lp-dial__counts">{counts}</p>
     </div>
   );
 }
