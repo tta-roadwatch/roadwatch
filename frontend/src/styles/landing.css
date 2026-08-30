@@ -443,24 +443,60 @@ html:has(.rw-lp) {
 }
 
 .rw-lp-evidence__rates {
+  display: grid;
+  gap: 24px;
+  margin: 0 0 28px;
+}
+
+.rw-lp-rate__head {
   display: flex;
   align-items: baseline;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-  margin: 0 0 20px;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
 }
 
-.rw-lp-evidence__rates span {
-  font-size: 44px;
+.rw-lp-rate__date {
+  font-size: var(--rw-size-body);
+  color: var(--rw-text-secondary);
+}
+
+.rw-lp-rate__value {
+  font-size: 40px;
   font-weight: var(--rw-weight-bold);
   color: var(--rw-intermittent-text);
-  line-height: 1.1;
+  line-height: 1;
 }
 
-.rw-lp-evidence__rates em {
-  font-style: normal;
+.rw-lp-rate__bar {
+  display: block;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--rw-surface-sunken);
+  overflow: hidden;
+}
+
+.rw-lp-rate__bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--rw-intermittent-text);
+  /* 시야에 들어올 때 0에서 늘어난다. 두 막대가 나란히 자라며 길이가
+     비슷하다는 게 눈에 들어온다. */
+  transition: width 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.rw-lp-rate__counts {
+  display: block;
+  margin-top: 8px;
   font-size: var(--rw-size-aux);
   color: var(--rw-text-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rw-lp-rate__bar > span {
+    transition: none;
+  }
 }
 
 .rw-lp-evidence__note {

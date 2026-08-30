@@ -251,12 +251,15 @@ export function Landing() {
         <div className="rw-lp-evidence">
           <Reveal className="rw-lp-evidence__main">
             <p className="rw-lp-label">대왕판교로 · 3차로 · 제한속도 60km/h</p>
-            <p className="rw-lp-evidence__rates">
-              <span>81.3%</span>
-              <em>2022-05-16</em>
-              <span>87.2%</span>
-              <em>2022-08-05</em>
-            </p>
+
+            {/* 두 값을 가로로 붙여두면 어느 날짜의 수치인지 읽히지 않는다.
+                세로로 세우고 막대를 붙여 «비슷하다»가 눈에 보이게 한다 —
+                이 섹션이 말하려는 것이 재현성이기 때문이다. */}
+            <div className="rw-lp-evidence__rates">
+              <RateRow date="2022-05-16" value={81.3} counts="52 / 64초" />
+              <RateRow date="2022-08-05" value={87.2} counts="116 / 133초" />
+            </div>
+
             <p className="rw-lp-evidence__note">
               약 3개월 간격의 서로 다른 두 주행에서 같은 격자가 비슷한 비율로
               걸렸습니다. 우연으로 보기 어려운 재현성입니다.
@@ -339,6 +342,34 @@ function StatBar({
       <Stat value={`${c}곳`} label="현장점검 권고 구간" highlight />
       <Stat value="98.8%" label="좌표 유효율" />
     </dl>
+  );
+}
+
+/** 한 주행의 이벤트율. 막대가 시야에 들어올 때 늘어난다.
+ *
+ * 값을 글자로만 두면 81.3 과 87.2 의 «비슷함»이 머리로만 이해된다.
+ * 막대 길이가 나란히 놓이면 눈으로 바로 읽힌다. */
+function RateRow({
+  date,
+  value,
+  counts,
+}: {
+  date: string;
+  value: number;
+  counts: string;
+}) {
+  const { ref, inView } = useInView<HTMLDivElement>("-40px");
+  return (
+    <div className="rw-lp-rate" ref={ref}>
+      <div className="rw-lp-rate__head">
+        <span className="rw-lp-rate__date">{date}</span>
+        <span className="rw-lp-rate__value">{value}%</span>
+      </div>
+      <div className="rw-lp-rate__bar">
+        <span style={{ width: inView ? `${value}%` : 0 }} />
+      </div>
+      <span className="rw-lp-rate__counts">{counts}</span>
+    </div>
   );
 }
 
