@@ -128,14 +128,14 @@ export function Landing() {
             한 번에 읽히고, 동작하는 물건이라는 증거도 된다. */}
         <Reveal as="figure" className="rw-lp-shot">
           <img
-            src="/shots/map.png"
-            alt="취약도로 지도 화면. 판교 도로망 위에 40m 격자가 분류색으로 표시되고, 세 번의 주행 궤적이 겹쳐 그려져 있다."
+            src="/shots/map.jpg"
+            alt="취약도로 지도 화면. 판교 일대 지도 위에 40m 격자가 분류색으로 표시되고, 세 번의 주행 궤적이 겹쳐 그려져 있다."
             width={1680}
             height={1050}
             loading="eager"
           />
           <figcaption>
-            실제 화면 — 40m 격자와 서로 다른 세 주행의 궤적을 겹쳐 봅니다
+            실제 화면 — 판교 일대 40m 격자와 서로 다른 세 주행의 궤적
           </figcaption>
         </Reveal>
 
@@ -212,7 +212,7 @@ export function Landing() {
         <div className="rw-lp-compare">
           <Reveal as="figure">
             <img
-              src="/shots/norm-before.png"
+              src="/shots/norm-before.jpg"
               alt="정규화 전 지도. 주행 경로 전 구간이 비상정지 표시로 굵게 칠해져 있다."
               width={1680}
               height={570}
@@ -229,7 +229,7 @@ export function Landing() {
 
           <Reveal as="figure" delay={120}>
             <img
-              src="/shots/norm-after.png"
+              src="/shots/norm-after.jpg"
               alt="정규화 후 지도. 표시가 세 개만 남아 있다."
               width={1680}
               height={570}
