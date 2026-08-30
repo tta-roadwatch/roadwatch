@@ -125,17 +125,6 @@ export function Landing() {
           </div>
         </div>
 
-        {/* 지도 스크린샷 대신 개념 그림을 둔다. 스크린샷은 정보가 많아
-            "무엇을 하는 서비스인가"가 한눈에 안 들어온다. 실제 화면은 아래
-            정규화 비교에서 보여준다. */}
-        <Reveal as="figure" className="rw-lp-shot rw-lp-shot--illust">
-          <RoadIllustration />
-          <figcaption>
-            서로 다른 날 지나간 세 주행이 같은 자리에서 걸렸다면, 그건 그날의
-            사정이 아니라 도로 쪽 문제일 수 있습니다
-          </figcaption>
-        </Reveal>
-
         <StatBar
           records={s.records}
           sessions={s.sessions}
@@ -170,6 +159,16 @@ export function Landing() {
               <li>어디부터 나가볼지 순서를 제안합니다</li>
             </ul>
           </div>
+        </Reveal>
+
+        {/* 앞 문단이 말한 «매일 그 길을 지나며 기록을 남긴다»를 그림으로
+            잇는다. Hero 에 두면 배경 사진의 도로와 겹쳐 충돌했다. */}
+        <Reveal as="figure" className="rw-lp-shot rw-lp-shot--illust" delay={120}>
+          <RoadIllustration />
+          <figcaption>
+            서로 다른 날 지나간 세 주행이 같은 자리에서 걸렸다면, 그건 그날의
+            사정이 아니라 도로 쪽 문제일 수 있습니다
+          </figcaption>
         </Reveal>
       </section>
 
