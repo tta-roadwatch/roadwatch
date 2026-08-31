@@ -19,21 +19,37 @@
 | 분석 파이프라인 (①적재 → ⑧도로명 매핑) | **완료 · 검증됨** — 인수 19항목 통과 |
 | 데이터베이스 스키마 · 시드 | **완료** — 원본 없이 기동 가능 |
 | 조회 API (`backend/app/`) | **완료** — NGSI-LD · Part3 인터페이스 · 인증 · 계약 테스트 39항목 |
-| 화면 (`frontend/`) | 작업 중 — KRDS 디자인 토큰 적용 |
+| 화면 (`frontend/`) | **완료** — KRDS 기반 9종 + 랜딩 + 로그인 |
 
-**`docker compose up` 으로 `db` 와 `api` 가 뜹니다.** API 문서는
-<http://localhost:8000/docs> 입니다. `web` 서비스는 화면 작업이 끝나면 함께 뜹니다.
+**`docker compose up` 으로 `db`·`api`·`web` 세 서비스가 모두 뜹니다.**
+화면은 <http://localhost:5173>, API 문서는 <http://localhost:8000/docs> 입니다.
 
 ---
 
 ## 실행
 
 원본 데이터(685MB)는 저장소에 없지만, 집계 결과가 시드에 들어 있어 그대로 확인할 수
-있습니다.
+있습니다. 받아서 바로 실행하는 절차는 이게 전부입니다.
 
 ```bash
-cp .env.example .env
-docker compose up -d db api
+cp .env.example .env      # 준비 작업은 이 한 줄뿐이다
+docker compose up -d      # db → api → web 순으로 뜬다
+```
+
+`db` 가 healthy 가 될 때까지 기다렸다가 나머지가 올라옵니다. 처음이면 이미지를
+내려받느라 몇 분 걸립니다.
+
+| | |
+|---|---|
+| 화면 | <http://localhost:5173> — 로그인 화면의 **테스트 로그인** 버튼 |
+| API 문서 | <http://localhost:8000/docs> |
+| 표준 응답 | <http://localhost:8000/ngsi-ld/v1/entities?type=TrafficEvent> |
+
+확인이 끝나면 `docker compose down -v` 로 정리합니다.
+
+검증까지 돌려 보려면:
+
+```bash
 make verify       # 인수 기준 검사
 make test         # 회귀 테스트
 ```
