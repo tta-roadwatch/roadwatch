@@ -299,14 +299,30 @@ def _family_summary(obs: list[dict]) -> dict:
     return out
 
 
-@router.get("/cells/{cell_key}/comparison", summary="SCR-08 개선 전·후")
+@router.get("/cells/{cell_key}/comparison", summary="SCR-08 조치 전·후")
 def comparison(cell_key: str):
-    """조치 전은 실측, 조치 후는 시뮬레이션이다.
+    """조치일을 기준으로 관측을 양쪽으로 갈라 보여준다.
 
-    실제 개선 이력이 확인된 사례가 없으므로 조치 후 값을 실측처럼 보이게 하면
-    안 된다. 응답에 simulated 플래그를 실어 화면이 반드시 표기하게 한다.
+    이 구간에 «조치 완료»로 기록된 점검이 있으면 그 완료일이 기준선이 된다.
+    완료일 앞뒤로 실제 주행 세션이 모두 있으면 양쪽 다 실측값이다 —
+    시뮬레이션이 아니다.
+
+    한쪽에만 세션이 있으면(대개 조치 후 데이터가 아직 없다) 비교를 만들지
+    않고 «재측정 대기»로 둔다. 없는 값을 지어내는 대신 무엇을 기다리는지
+    밝히는 편이 낫다.
+
+    조치 기록이 아예 없으면 비교할 기준선이 없으므로 관측 이력만 돌려준다.
+
+    주의: 앞뒤 값이 달라도 그것이 조치 «때문»이라고 말하지 않는다. 계절·
+    시간대·교통량이 함께 달라졌을 수 있다. 이 서비스는 원인을 단정하지
+    않으므로 여기서도 관측 사실까지만 보여준다.
     """
     with cursor() as cur:
+        cur.execute("select road_name from grid_cells where cell_key = %s", (cell_key,))
+        g = cur.fetchone()
+        if g is None:
+            raise errors.not_found(f"해당 격자가 없습니다: {cell_key}")
+
         cur.execute("""
             select o.session_id, o.observation_count, o.event_count, o.event_rate,
                    s.actual_start
@@ -317,52 +333,94 @@ def comparison(cell_key: str):
         obs = cur.fetchall()
         if not obs:
             raise errors.not_found(f"비교할 관측이 없습니다: {cell_key}")
-        cur.execute("select road_name from grid_cells where cell_key = %s", (cell_key,))
-        g = cur.fetchone()
+
         cur.execute("""
-            select status, findings, action, inspected_at, created_at
-            from inspections where cell_key = %s order by created_at
+            select id, status, findings, action, cause, inspector,
+                   inspected_at, created_at, completed_on
+            from inspections
+            where cell_key = %s
+            order by created_at
         """, (cell_key,))
         insp = cur.fetchall()
 
-    before = obs[0]
-    rate = before["event_rate"] or 0
-    # 시뮬레이션 — 조치가 효과를 냈을 때의 가정값. 실측이 아님을 명시한다.
-    after_rate = round(rate * 0.15, 4)
-    return {
+    def _obs(o):
+        return {"session_id": o["session_id"], "observed_at": _iso(o["actual_start"]),
+                "event_rate": _r(o["event_rate"]), "event_count": o["event_count"],
+                "observation_count": o["observation_count"]}
+
+    def _side(rows):
+        """여러 세션을 한쪽 값으로 묶는다 — 관측 수로 가중 평균한다.
+
+        단순 평균을 내면 3초만 관측된 세션과 300초 관측된 세션이 같은
+        무게를 갖는다. 이벤트율은 관측 대비 비율이므로 관측 수로 눌러야
+        맞다.
+        """
+        obs_n = sum(r["observation_count"] or 0 for r in rows)
+        ev_n = sum(r["event_count"] or 0 for r in rows)
+        return {
+            "sessions": [_obs(r) for r in rows],
+            "session_count": len(rows),
+            "event_count": ev_n,
+            "observation_count": obs_n,
+            "event_rate": _r(ev_n / obs_n) if obs_n else None,
+            "measured": True,
+        }
+
+    # 조치가 끝난 기록 가운데 가장 최근 완료일을 기준선으로 잡는다
+    done = [i for i in insp if i["status"] == "resolved" and i["completed_on"]]
+    baseline = max((i["completed_on"] for i in done), default=None)
+
+    result = {
         "cell_key": cell_key,
-        "road_name": g["road_name"] if g else None,
-        "before": {
-            "session_id": before["session_id"],
-            "observed_at": _iso(before["actual_start"]),
-            "event_count": before["event_count"],
-            "observation_count": before["observation_count"],
-            "event_rate": _r(rate),
-            "simulated": False,
-        },
-        "after": {
-            "session_id": None,
-            "observed_at": None,
-            "event_count": round((before["observation_count"] or 0) * after_rate),
-            "observation_count": before["observation_count"],
-            "event_rate": after_rate,
-            "simulated": True,
-        },
-        "simulation_notice": ("조치 후 값은 시뮬레이션입니다. 두 세션 사이에 실제 도로 "
-                             "개선이 있었는지는 확인되지 않았습니다."),
+        "road_name": g["road_name"],
+        "baseline": _iso(baseline),
         "history": [
             {"status": i["status"], "findings": i["findings"], "action": i["action"],
+             "cause": i["cause"], "completed_on": _iso(i["completed_on"]),
              "at": _iso(i["inspected_at"] or i["created_at"])}
             for i in insp
         ],
-        "measured_sessions": [
-            {"session_id": o["session_id"], "observed_at": _iso(o["actual_start"]),
-             "event_rate": _r(o["event_rate"]),
-             "event_count": o["event_count"],
-             "observation_count": o["observation_count"]}
-            for o in obs
-        ],
+        "measured_sessions": [_obs(o) for o in obs],
     }
+
+    if baseline is None:
+        result |= {
+            "state": "no_action",
+            "before": None, "after": None,
+            "notice": ("이 구간에는 완료된 조치 기록이 없습니다. 조치를 «조치 완료»로 "
+                       "등록하면 그 날짜를 기준으로 전·후 관측을 비교합니다."),
+        }
+        return result
+
+    before = [o for o in obs if o["actual_start"].date() < baseline]
+    after = [o for o in obs if o["actual_start"].date() >= baseline]
+
+    if not before or not after:
+        result |= {
+            "state": "awaiting_remeasure",
+            "before": _side(before) if before else None,
+            "after": _side(after) if after else None,
+            "notice": ("조치일 이후의 주행 세션이 아직 없어 비교할 수 없습니다. "
+                       "신규 주행 데이터가 공개되면 자동으로 재측정합니다."
+                       if not after else
+                       "조치일 이전의 주행 세션이 없어 비교할 수 없습니다."),
+        }
+        return result
+
+    b, a = _side(before), _side(after)
+    delta = None
+    if b["event_rate"] is not None and a["event_rate"] is not None:
+        delta = _r(a["event_rate"] - b["event_rate"])
+
+    result |= {
+        "state": "compared",
+        "before": b, "after": a,
+        "delta": delta,
+        "notice": ("조치일을 기준으로 나눈 실제 관측값입니다. 값의 변화가 조치 "
+                   "때문인지는 확정하지 않습니다 — 계절·시간대·교통량이 함께 "
+                   "달라졌을 수 있습니다."),
+    }
+    return result
 
 
 # ── 공용 ──────────────────────────────────────────────────────────────

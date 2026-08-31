@@ -20,8 +20,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from . import auth as auth_mod, deps, errors
-from .routers import (auth, datasets, entities, geo, inspections, report,
-                      screens, standards)
+from .routers import (
+    auth, datasets, entities, geo, inspections, report, reports, screens, standards,
+)
 
 DESCRIPTION = """
 판교 제로시티 자율주행 개방데이터에서 **자율주행차가 반복적으로 어려움을 겪는
@@ -57,7 +58,7 @@ app.add_middleware(
 )
 
 for r in (entities.router, datasets.router, screens.router,
-          inspections.router, report.router, geo.router,
+          inspections.router, reports.router, report.router, geo.router,
           standards.router, auth.router):
     app.include_router(r)
 

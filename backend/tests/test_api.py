@@ -245,12 +245,41 @@ def test_cell_detail_distinguishes_unobserved_from_zero(client):
             assert o["event_rate"] is None, "관측이 없으면 이벤트율이 0이 아니라 없음이다"
 
 
-def test_comparison_marks_after_as_simulated(client):
-    """조치 후 값을 실측처럼 보이게 하면 안 된다."""
+def test_comparison_without_action_offers_no_before_after(client):
+    """조치 기록이 없으면 전·후를 만들어내지 않는다.
+
+    예전에는 조치 후 값을 시뮬레이션으로 채웠다. 지금은 기준선이 없으면
+    비교 자체를 만들지 않는다 — 없는 값을 지어내는 대신 무엇이 필요한지
+    알린다.
+    """
     c = client.get("/api/cells/21:4/comparison").json()
-    assert c["before"]["simulated"] is False
-    assert c["after"]["simulated"] is True
-    assert "시뮬레이션" in c["simulation_notice"]
+    assert c["state"] == "no_action"
+    assert c["before"] is None and c["after"] is None
+    assert "조치 완료" in c["notice"]
+
+
+def test_comparison_splits_measured_observations_by_action_date(
+        client, restores_db, auth_headers):
+    """조치일 앞뒤에 세션이 모두 있으면 양쪽 다 실측값이어야 한다."""
+    r = client.post("/api/inspections", headers=auth_headers, json={
+        "cell_key": "21:4", "status": "resolved", "findings": ["차선 마모"],
+        "action": "차선 재도색",
+    })
+    assert r.status_code == 201
+    iid = r.json()["id"]
+    # 세션 사이 날짜로 옮겨 앞뒤 모두 관측이 있게 만든다
+    client.patch(f"/api/inspections/{iid}", headers=auth_headers,
+                 json={"completed_on": "2022-09-01"})
+
+    c = client.get("/api/cells/21:4/comparison").json()
+    assert c["state"] == "compared"
+    assert c["baseline"] == "2022-09-01"
+    for side in ("before", "after"):
+        assert c[side]["measured"] is True
+        assert c[side]["session_count"] > 0
+        assert 0 <= c[side]["event_rate"] <= 1
+    # 변화를 보여주되 원인은 단정하지 않는다
+    assert "확정하지 않습니다" in c["notice"]
 
 
 # ── 점검 (유일한 쓰기 경로) ───────────────────────────────────────────

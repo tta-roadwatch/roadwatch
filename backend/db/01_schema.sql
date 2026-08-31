@@ -107,19 +107,52 @@ CREATE TABLE road_issues (
     decided_at     TIMESTAMPTZ DEFAULT now()
 );
 
--- 현장점검 : 시스템 판정을 사람이 확정·번복하는 지점
+-- 현장점검 : 시스템 판정을 사람이 확정·번복하는 지점.
+--
+-- 상태는 도로관리 업무의 실제 흐름을 따른다. 후보로 올라온 뒤 담당자가
+-- 배정되고(scheduled), 현장을 보고(inspecting), 고칠 것이 있으면 조치를
+-- 기다렸다가(action_needed), 끝난다(resolved). 현장에서 도로 문제가
+-- 아니라고 확인되면 어느 단계에서든 not_applicable 로 빠진다.
 CREATE TABLE inspections (
     id           BIGSERIAL PRIMARY KEY,
     cell_key     TEXT NOT NULL REFERENCES grid_cells(cell_key) ON DELETE CASCADE,
-    status       TEXT NOT NULL DEFAULT 'recommended',  -- recommended | inspecting | resolved | not_applicable
+    status       TEXT NOT NULL DEFAULT 'recommended',
+    -- recommended | scheduled | inspecting | action_needed | resolved | not_applicable
     findings     TEXT[] NOT NULL DEFAULT '{}',         -- 차선 마모 · 표지판 가림 · 상시 수동 운행 구간 …
-    action       TEXT,
+    action       TEXT,                                 -- 무엇을 하기로 했는가
+    cause        TEXT,                                 -- 현장에서 확인한 원인
+    assignee     TEXT,                                 -- 담당자
+    scheduled_for DATE,                                -- 점검 예정일
     inspector    TEXT,
     inspected_at TIMESTAMPTZ,
+    -- 조치가 끝난 날. 개선 전·후 비교의 기준선이 되므로 날짜만 남긴다.
+    completed_on DATE,
     created_at   TIMESTAMPTZ DEFAULT now()
 );
 CREATE INDEX ON inspections (cell_key);
 CREATE INDEX ON inspections (status);
+
+-- 시민 도로 불편 제보
+--
+-- 판정에는 쓰지 않는다. 자율주행 데이터가 잡아내지 못하는 현장 사정을
+-- 관리자가 점검 우선순위를 정할 때 참고하는 «추가 신호»다. 그래서
+-- grid_cells 참조를 강제하지 않는다 — 격자 밖에서도 제보가 들어온다.
+--
+-- 접수는 인증 없이 연다. 점검 등록은 시스템 판정을 사람이 뒤집는
+-- 행정 행위라 인증이 필요하지만, 민원 접수는 판정을 바꾸지 않고
+-- 참고 자료로만 쌓이므로 공공 민원 창구처럼 열어두는 편이 맞다.
+CREATE TABLE citizen_reports (
+    id          BIGSERIAL PRIMARY KEY,
+    cell_key    TEXT REFERENCES grid_cells(cell_key) ON DELETE SET NULL,
+    lat         DOUBLE PRECISION NOT NULL,
+    lon         DOUBLE PRECISION NOT NULL,
+    category    TEXT NOT NULL,        -- 차선 안 보임 · 공사 차선 변경 · 노면 파임 · 표지판 가림 · 기타
+    note        TEXT,                 -- 시민이 덧붙인 한 줄
+    status      TEXT NOT NULL DEFAULT 'received',   -- received | reviewing | reflected | closed
+    created_at  TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX ON citizen_reports (cell_key);
+CREATE INDEX ON citizen_reports (created_at DESC);
 
 -- 사용자 : 도로관리 담당자.
 -- 조회는 공개 데이터라 인증 없이 열어두고, 현장점검 등록(쓰기)에만 인증을 건다.

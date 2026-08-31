@@ -145,6 +145,7 @@ SEED_TABLES = (
     ("cell_observations", "id"),
     ("road_issues", "cell_key"),
     ("inspections", "id"),
+    ("citizen_reports", "id"),
     ("normalization_points", "id"),
     ("trajectories", "id"),
 )
