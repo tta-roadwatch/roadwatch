@@ -68,7 +68,8 @@ export function Comparison() {
         ]}
       />
 
-      {c.state === "no_action" && (
+      <div className="rw-stack">
+        {c.state === "no_action" && (
         <Alert
           severity="info"
           title="비교할 기준선이 없습니다"
@@ -181,8 +182,9 @@ export function Comparison() {
               ))}
             </tbody>
           </table>
-        </div>
-      </Card>
+          </div>
+        </Card>
+      </div>
     </>
   );
 }

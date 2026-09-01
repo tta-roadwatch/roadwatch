@@ -17,12 +17,23 @@ import { PageHeader } from "../components/PageHeader";
 import { Empty, ErrorState, Loading } from "../components/States";
 import { coord, day } from "../lib/format";
 
+/** 업무 흐름 순서. 서버의 WORKFLOW 와 같은 차례여야 대시보드 업무함에서
+ *  넘어왔을 때 같은 순서로 보인다. 상태를 늘리면 여기도 함께 늘린다 —
+ *  빠뜨리면 그 상태의 칩이 사라지고 건수도 세지 않는다. */
 const STATUS_ORDER: InspectionStatus[] = [
   "recommended",
+  "scheduled",
   "inspecting",
+  "action_needed",
   "resolved",
   "not_applicable",
 ];
+
+function asStatus(v: string | null): InspectionStatus | null {
+  return v && (STATUS_ORDER as string[]).includes(v)
+    ? (v as InspectionStatus)
+    : null;
+}
 
 interface Bundle {
   inspections: Inspection[];
@@ -42,7 +53,15 @@ interface Bundle {
 export function Inspections() {
   const { user } = useAuth();
   const [params, setParams] = useSearchParams();
-  const [filter, setFilter] = useState<InspectionStatus | null>(null);
+  // 대시보드 업무함이 ?status=... 로 넘긴다. 주소를 그대로 상태로 삼아야
+  // 뒤로가기·새로고침·링크 공유가 같게 동작한다.
+  const filter = asStatus(params.get("status"));
+  const setFilter = (next: InspectionStatus | null) => {
+    const p = new URLSearchParams(params);
+    if (next) p.set("status", next);
+    else p.delete("status");
+    setParams(p, { replace: true });
+  };
 
   const targetCell = params.get("cell");
 

@@ -1078,15 +1078,6 @@ a.rw-login__brand:focus-visible {
   pointer-events: none;
 }
 
-.rw-flow__order {
-  position: absolute;
-  top: var(--rw-space-3);
-  right: var(--rw-space-3);
-  font-size: var(--rw-size-caption);
-  color: var(--rw-text-muted);
-  font-variant-numeric: tabular-nums;
-}
-
 .rw-flow__link {
   display: flex;
   flex-direction: column;

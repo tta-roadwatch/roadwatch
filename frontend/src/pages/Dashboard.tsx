@@ -258,11 +258,8 @@ function Workbox({ wb }: { wb: WorkboxData }) {
       footer={wb.notice}
     >
       <ol className="rw-flow">
-        {wb.stages.map((st, i) => (
+        {wb.stages.map((st) => (
           <li key={st.status} className="rw-flow__step">
-            <span className="rw-flow__order" aria-hidden="true">
-              {i + 1}
-            </span>
             <Link
               className="rw-flow__link"
               to={`/inspections?status=${st.status}`}
