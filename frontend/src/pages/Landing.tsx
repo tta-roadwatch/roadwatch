@@ -611,6 +611,11 @@ function LandingHeader() {
           ))}
         </nav>
 
+        {/* 시민 제보는 로그인 밖이라 «시작하기» 옆에 따로 둔다.
+            도로관리자용 입구와 시민용 입구가 섞이면 둘 다 헷갈린다. */}
+        <Link to="/report" className="rw-lp-btn rw-lp-btn--sm rw-lp-btn--ghost">
+          불편 제보
+        </Link>
         <Link to="/dashboard" className="rw-lp-btn rw-lp-btn--sm">
           시작하기
         </Link>

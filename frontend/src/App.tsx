@@ -14,6 +14,7 @@ import { Inspections } from "./pages/Inspections";
 import { Standards } from "./pages/Standards";
 import { Landing } from "./pages/Landing";
 import { Login } from "./pages/Login";
+import { ReportForm } from "./pages/ReportForm";
 
 export function App() {
   return (
@@ -24,6 +25,8 @@ export function App() {
             랜딩은 자체 헤더를 갖고, 서비스를 처음 보는 사람을 위한 화면이다. */}
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
+        {/* 시민 제보는 로그인 밖이다 — 판정을 바꾸지 않는 민원 창구다 */}
+        <Route path="/report" element={<ReportForm />} />
 
         <Route
           path="*"

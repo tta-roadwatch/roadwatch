@@ -1186,3 +1186,95 @@ a.rw-login__brand:focus-visible {
 .rw-quotes .rw-meta {
   font-size: var(--rw-size-caption);
 }
+
+/* ── 시민용 공개 화면 (제보) ─────────────────────────────────
+   업무 화면(AppShell)과 달리 전역 메뉴가 없다. 시민에게 대시보드·
+   데이터·표준 메뉴를 보여줄 이유가 없고, 보이면 «내가 볼 화면이
+   아닌가» 하게 된다. */
+
+.rw-public {
+  min-height: 100vh;
+  background: var(--rw-bg);
+}
+
+.rw-public__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rw-space-4);
+  padding: var(--rw-space-4) var(--rw-space-6);
+  background: var(--rw-surface);
+  border-bottom: 1px solid var(--rw-border);
+}
+
+.rw-public__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--rw-space-3);
+  font-weight: var(--rw-weight-bold);
+  color: inherit;
+  text-decoration: none;
+}
+
+.rw-public__body {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--rw-space-8) var(--rw-space-6) var(--rw-space-10);
+  display: grid;
+  gap: var(--rw-space-6);
+}
+
+.rw-public__title {
+  margin: 0;
+  font-size: var(--rw-size-page-title);
+  font-weight: var(--rw-weight-bold);
+}
+
+.rw-public__lead {
+  margin: 0;
+  color: var(--rw-text-secondary);
+  line-height: var(--rw-leading-relaxed);
+}
+
+/* ── 선택지 (제보 항목) ──────────────────────────────────────
+   라디오를 세로로 늘어놓는다. 항목이 문장이라 가로로 늘어놓으면
+   줄이 들쭉날쭉해져 읽기 어렵다. */
+
+.rw-choices {
+  display: grid;
+  gap: var(--rw-space-2);
+}
+
+.rw-choice {
+  display: flex;
+  align-items: center;
+  gap: var(--rw-space-3);
+  padding: var(--rw-space-4);
+  border: 1px solid var(--rw-border);
+  border-radius: var(--rw-radius-lg);
+  cursor: pointer;
+}
+
+.rw-choice:hover {
+  border-color: var(--rw-primary);
+}
+
+/* 선택된 항목은 테두리로만 표시한다. 배경을 칠하면 그 항목이
+   «권장»처럼 읽힌다 — 어느 것을 고르든 같은 무게여야 한다. */
+.rw-choice:has(input:checked) {
+  border-color: var(--rw-primary);
+  box-shadow: inset 0 0 0 1px var(--rw-primary);
+}
+
+.rw-choice input {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--rw-primary);
+}
+
+/* 선택지 다음에 오는 입력칸은 한 칸 띄운다. 붙으면 «덧붙일 말»이
+   마지막 선택지의 설명처럼 읽힌다. */
+.rw-choices + .rw-field {
+  margin-top: var(--rw-space-6);
+}

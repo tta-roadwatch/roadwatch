@@ -113,13 +113,19 @@ html:has(.rw-lp) {
   background: var(--rw-primary-weak);
 }
 
+/* --sm 은 크기만 정한다. 색까지 여기서 정하면 --ghost 처럼 뒤에 오는
+   변형을 덮어버려, 헤더의 두 버튼이 똑같이 파랗게 나온다. */
 .rw-lp-btn--sm {
   padding: 9px 18px;
   font-size: var(--rw-size-aux);
+}
+
+/* 변형을 안 붙인 --sm 은 기본이 파란 버튼이다 */
+.rw-lp-btn--sm:not(.rw-lp-btn--ghost):not(.rw-lp-btn--onfill) {
   background: var(--rw-primary);
   color: var(--rw-text-on-fill);
 }
-.rw-lp-btn--sm:hover {
+.rw-lp-btn--sm:not(.rw-lp-btn--ghost):not(.rw-lp-btn--onfill):hover {
   background: var(--rw-primary-hover);
 }
 
