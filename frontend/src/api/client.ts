@@ -4,8 +4,10 @@ import type {
   AuthConfig,
   AuthUser,
   Cell,
-  CellFeatureCollection,
   CellDetail,
+  CellFeatureCollection,
+  CellReports,
+  CitizenReport,
   Comparison,
   Dashboard,
   DatasetMeta,
@@ -22,6 +24,7 @@ import type {
   RoadLinkCollection,
   Standards,
   TrajectoryCollection,
+  Workbox,
 } from "./types";
 
 const BASE = (import.meta.env.VITE_API_BASE || "http://localhost:8000").replace(
@@ -124,6 +127,38 @@ export const api = {
   /** 점검 결과 선택지는 서버가 준다. 화면에 하드코딩하지 않는다. */
   findingOptions: () => request<FindingOptions>("/api/inspections/findings"),
 
+  /** 업무함 — 상태별 건수와 오늘 할 일 */
+  workbox: () => request<Workbox>("/api/inspections/workbox"),
+
+  /** 시민 제보 항목도 서버가 준다 */
+  reportCategories: () =>
+    request<{ categories: string[] }>("/api/reports/categories"),
+
+  cellReports: (cellKey: string) =>
+    request<CellReports>(`/api/cells/${key(cellKey)}/reports`),
+
+  citizenReports: (params?: { cell_key?: string; limit?: number }) => {
+    const q = new URLSearchParams();
+    if (params?.cell_key) q.set("cell_key", params.cell_key);
+    if (params?.limit) q.set("limit", String(params.limit));
+    const qs = q.toString();
+    return request<{ reports: CitizenReport[]; total: number; notice: string }>(
+      `/api/reports${qs ? `?${qs}` : ""}`,
+    );
+  },
+
+  /** 제보 접수는 인증이 필요 없다 — 판정을 바꾸지 않는 민원 창구다. */
+  createReport: (body: {
+    lat: number;
+    lon: number;
+    category: string;
+    note?: string | null;
+  }) =>
+    request<CitizenReport>("/api/reports", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
   createInspection: (body: InspectionCreate) =>
     request<Inspection>("/api/inspections", {
       method: "POST",
@@ -132,7 +167,13 @@ export const api = {
 
   updateInspection: (
     id: number,
-    body: Partial<Pick<Inspection, "status" | "findings" | "action" | "inspector">>,
+    body: Partial<
+      Pick<
+        Inspection,
+        | "status" | "findings" | "action" | "cause"
+        | "assignee" | "scheduled_for" | "completed_on"
+      >
+    >,
   ) =>
     request<Inspection>(`/api/inspections/${id}`, {
       method: "PATCH",

@@ -4,9 +4,84 @@ import type { Classification } from "../lib/classification";
 
 export type InspectionStatus =
   | "recommended"
+  | "scheduled"
   | "inspecting"
+  | "action_needed"
   | "resolved"
   | "not_applicable";
+
+/** 시민 제보. 취약구간 판정에는 쓰지 않는 참고 신호다. */
+export interface CitizenReport {
+  id: number;
+  cell_key: string | null;
+  lat: number;
+  lon: number;
+  category: string;
+  note: string | null;
+  status: string;
+  status_label: string;
+  created_at: string;
+  road_name: string | null;
+  /** 접수 직후에만 온다 — 가까운 격자에 붙었는지 */
+  matched?: boolean;
+  match_notice?: string;
+}
+
+export interface CellReports {
+  cell_key: string;
+  total: number;
+  by_category: { category: string; count: number }[];
+  reports: CitizenReport[];
+  notice: string;
+}
+
+/** 점검·조치 업무함 — 상태별 건수와 오늘 할 일 */
+export interface Workbox {
+  stages: { status: InspectionStatus; label: string; count: number }[];
+  not_applicable: number;
+  open_total: number;
+  overdue: Inspection[];
+  today: Inspection[];
+  notice: string;
+}
+
+/** 조치 전·후 한쪽. 여러 세션을 관측 수로 가중 평균한 값이다. */
+export interface ComparisonSide {
+  sessions: {
+    session_id: string;
+    observed_at: string | null;
+    event_rate: number | null;
+    event_count: number;
+    observation_count: number;
+  }[];
+  session_count: number;
+  event_count: number;
+  observation_count: number;
+  event_rate: number | null;
+  measured: true;
+}
+
+export interface Comparison {
+  cell_key: string;
+  road_name: string | null;
+  /** 조치 완료일. 이 날짜를 기준으로 관측을 양쪽으로 가른다 */
+  baseline: string | null;
+  /** no_action 조치 기록 없음 · awaiting_remeasure 한쪽만 있음 · compared 양쪽 실측 */
+  state: "no_action" | "awaiting_remeasure" | "compared";
+  before: ComparisonSide | null;
+  after: ComparisonSide | null;
+  delta?: number | null;
+  notice: string;
+  history: {
+    status: InspectionStatus;
+    findings: string[];
+    action: string | null;
+    cause: string | null;
+    completed_on: string | null;
+    at: string | null;
+  }[];
+  measured_sessions: ComparisonSide["sessions"];
+}
 
 /** 분석 갈래. 갈래마다 이벤트 정의가 달라 이벤트율을 직접 비교하면 안 된다. */
 export type MetricFamily = "bsm" | "joined";
@@ -171,6 +246,11 @@ export interface Inspection {
   created_at: string;
   road_name?: string | null;
   classification?: Classification | null;
+  cause: string | null;
+  assignee: string | null;
+  scheduled_for: string | null;
+  completed_on: string | null;
+  status_label: string;
 }
 
 export interface FindingOptions {
@@ -186,39 +266,6 @@ export interface InspectionCreate {
   action?: string | null;
   inspector?: string | null;
   status?: InspectionStatus;
-}
-
-// ── SCR-08 개선 전·후 ────────────────────────────────────────
-
-export interface ComparisonSide {
-  session_id: string | null;
-  observed_at: string | null;
-  event_count: number | null;
-  observation_count: number | null;
-  event_rate: number | null;
-  /** true 면 실측이 아니다. 화면은 반드시 표기해야 한다. */
-  simulated: boolean;
-}
-
-export interface Comparison {
-  cell_key: string;
-  road_name: string | null;
-  before: ComparisonSide;
-  after: ComparisonSide;
-  simulation_notice: string;
-  history: {
-    status: InspectionStatus;
-    findings: string[];
-    action: string | null;
-    at: string | null;
-  }[];
-  measured_sessions: {
-    session_id: string;
-    observed_at: string | null;
-    event_rate: number | null;
-    event_count: number | null;
-    observation_count: number | null;
-  }[];
 }
 
 // ── SCR-06 AI 리포트 ─────────────────────────────────────────
