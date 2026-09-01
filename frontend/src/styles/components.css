@@ -1039,28 +1039,43 @@ a.rw-login__brand:focus-visible {
    순번과 글자가 한다 — 다섯 단계를 색으로만 나누면 색을 구분하기
    어려운 사용자가 순서를 읽을 수 없다. */
 
+/* 줄을 바꾸지 않는다. 좁은 화면에서 칸이 접히면 다음 줄 맨 앞에 화살표가
+   남아 빈 곳을 가리킨다. 흐름은 한 줄로 읽혀야 하므로, 좁으면 접는 대신
+   가로로 밀어 본다 — 표(.rw-table-wrap)와 같은 방식이다.
+
+   화살표가 칸 사이에 들어앉아야 해서 간격을 글리프보다 넓게 잡는다.
+   12px 로 두면 14px 짜리 «→» 가 양옆 카드 위로 넘친다. */
 .rw-flow {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: var(--rw-space-3);
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--rw-space-6);
   margin: 0;
-  padding: 0;
+  padding: 0 0 var(--rw-space-2);
   list-style: none;
+  overflow-x: auto;
 }
 
 .rw-flow__step {
   position: relative;
+  flex: 1 0 148px;
 }
 
-/* 단계 사이 화살표. 마지막 칸에는 붙이지 않는다. */
+.rw-flow__link {
+  height: 100%;
+}
+
+/* 단계 사이 화살표. 첫 칸 앞에는 붙이지 않는다.
+   간격 한가운데에 놓아 양옆 카드 어디에도 닿지 않게 한다. */
 .rw-flow__step + .rw-flow__step::before {
   content: "→";
   position: absolute;
-  left: calc(var(--rw-space-3) * -1);
+  left: calc(var(--rw-space-6) / -2);
   top: 50%;
-  transform: translate(-25%, -50%);
+  transform: translate(-50%, -50%);
   color: var(--rw-border-strong);
-  font-size: var(--rw-size-aux);
+  font-size: var(--rw-size-caption);
+  line-height: 1;
+  pointer-events: none;
 }
 
 .rw-flow__order {
