@@ -293,6 +293,53 @@ def test_comparison_splits_measured_observations_by_action_date(
 
 # ── 점검 (유일한 쓰기 경로) ───────────────────────────────────────────
 
+
+def test_one_open_inspection_per_cell(client, restores_db, auth_headers):
+    """한 구간에 진행 중인 점검은 하나여야 한다.
+
+    같은 자리가 «신규 후보»와 «점검 중»에 동시에 놓이면 업무함이 한 장소를
+    두 번 세어, 담당자가 실제보다 많은 일이 걸려 있다고 읽는다.
+    """
+    cells = client.get("/api/cells", params={"candidates_only": True}).json()
+    target = next(c["cell_key"] for c in cells
+                  if c.get("inspection_status") not in ("resolved", "not_applicable"))
+
+    before = client.get("/api/inspections", params={"cell_key": target}).json()
+
+    a = client.post("/api/inspections", headers=auth_headers, json={
+        "cell_key": target, "status": "inspecting", "findings": ["차선 마모"]})
+    b = client.post("/api/inspections", headers=auth_headers, json={
+        "cell_key": target, "status": "action_needed", "action": "재도색 요청"})
+    assert a.status_code == 201 and b.status_code == 201
+    # 새로 만들지 않고 같은 기록을 진행시킨다
+    assert a.json()["id"] == b.json()["id"]
+
+    after = client.get("/api/inspections", params={"cell_key": target}).json()
+    assert len(after) == len(before)
+    assert after[0]["status"] == "action_needed"
+
+
+def test_resolved_cell_can_start_a_new_cycle(client, restores_db, auth_headers):
+    """조치가 끝난 뒤에는 같은 구간에 새 점검을 시작할 수 있어야 한다.
+
+    2023년에 고치고 2025년에 다시 문제가 생기는 일은 정상이다. 이력은
+    남기되 진행 중인 것만 하나로 묶는다.
+    """
+    cells = client.get("/api/cells", params={"candidates_only": True}).json()
+    target = next(c["cell_key"] for c in cells
+                  if c.get("inspection_status") not in ("resolved", "not_applicable"))
+
+    done = client.post("/api/inspections", headers=auth_headers, json={
+        "cell_key": target, "status": "resolved", "action": "재도색 완료"}).json()
+    assert done["completed_on"]
+
+    fresh = client.post("/api/inspections", headers=auth_headers, json={
+        "cell_key": target, "status": "inspecting", "findings": ["노면 상태"]}).json()
+    assert fresh["id"] != done["id"]
+
+    rows = client.get("/api/inspections", params={"cell_key": target}).json()
+    assert {r["status"] for r in rows} == {"inspecting", "resolved"}
+
 def test_inspection_lifecycle_and_false_positive_override(client, restores_db,
                                                         auth_headers):
     """사람이 시스템 판정을 뒤집을 수 있어야 한다.

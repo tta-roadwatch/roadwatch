@@ -35,6 +35,10 @@ NOT_A_ROAD_ISSUE = "상시 수동 운행 구간 (도로 문제 아님)"
 WORKFLOW = ("recommended", "scheduled", "inspecting", "action_needed", "resolved")
 STATUSES = (*WORKFLOW, "not_applicable")
 
+#: 아직 담당자 손에 걸려 있는 상태. resolved·not_applicable 은 끝난 것이라
+#: 여기 들지 않는다 — 끝난 뒤에는 같은 구간에 새 점검을 시작할 수 있다.
+OPEN_STATUSES = ("recommended", "scheduled", "inspecting", "action_needed")
+
 STATUS_LABELS = {
     "recommended":    "신규 후보",
     "scheduled":      "점검 예정",
@@ -159,7 +163,7 @@ def list_inspections(status: str | None = None, cell_key: str | None = None):
         return [_row(r) for r in cur.fetchall()]
 
 
-@router.post("/inspections", summary="점검 등록", status_code=201)
+@router.post("/inspections", summary="점검 등록·진행", status_code=201)
 def create_inspection(body: InspectionCreate, user: dict = auth.RequireUser):
     if body.status not in STATUSES:
         raise errors.bad_request(f"알 수 없는 상태입니다: {body.status}")
@@ -171,6 +175,41 @@ def create_inspection(body: InspectionCreate, user: dict = auth.RequireUser):
         cur.execute("select 1 from grid_cells where cell_key = %s", (body.cell_key,))
         if cur.fetchone() is None:
             raise errors.not_found(f"해당 격자가 없습니다: {body.cell_key}")
+
+        # 같은 구간에 진행 중인 점검이 있으면 새로 만들지 않고 그것을 진행시킨다.
+        #
+        # 한 자리가 «신규 후보»와 «점검 중»에 동시에 놓이면 업무함이 같은
+        # 장소를 두 번 세어, 담당자가 실제보다 많은 일이 걸려 있다고 읽는다.
+        # 후보로 올라온 기록이 이미 있으므로, 현장에 다녀온 사람은 새 기록을
+        # 만드는 게 아니라 그 기록을 채우는 것이 맞다.
+        cur.execute(
+            """select id from inspections
+               where cell_key = %s and status = any(%s)
+               order by created_at limit 1""",
+            (body.cell_key, list(OPEN_STATUSES)),
+        )
+        open_row = cur.fetchone()
+        if open_row:
+            cur.execute(
+                """update inspections
+                   set status = %s, findings = %s, action = %s, cause = %s,
+                       assignee = coalesce(%s, assignee),
+                       scheduled_for = coalesce(%s, scheduled_for),
+                       inspector = %s, inspected_at = %s,
+                       completed_on = case when %s = 'resolved'
+                                           then coalesce(completed_on, %s)
+                                           else completed_on end
+                   where id = %s""",
+                (body.status, body.findings, body.action, body.cause,
+                 body.assignee, body.scheduled_for,
+                 user["display_name"] or user["username"],
+                 datetime.now(timezone.utc),
+                 body.status, date.today(), open_row["id"]),
+            )
+            _apply_not_a_road_issue(cur, body.cell_key, body.findings)
+            cur.execute(_SELECT + " where i.id = %s", (open_row["id"],))
+            return _row(cur.fetchone())
+
         cur.execute(
             """insert into inspections (cell_key, status, findings, action, cause,
                                         assignee, scheduled_for, inspector,
