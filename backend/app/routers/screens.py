@@ -46,7 +46,13 @@ def dashboard():
               (select count(*) from grid_cells)                               as cells,
               (select coalesce(sum(record_count),0) from session_files
                  where dataset_kind <> 'CONTROL')                             as records,
-              (select count(*) from inspections where status='recommended')   as pending,
+              -- 아직 끝나지 않은 점검. 상태가 4단계이던 시절에는 recommended
+              -- 하나가 «손대지 않은 것»을 뜻했지만, 지금은 예정·점검 중·조치
+              -- 필요도 담당자 손에 걸려 있는 일이다. 업무함(open_total)과 같은
+              -- 기준으로 세야 두 카드가 어긋나지 않는다.
+              (select count(*) from inspections
+                 where status in ('recommended','scheduled',
+                                  'inspecting','action_needed'))                as pending,
               (select count(*) from inspections where status='resolved')      as resolved,
               (select count(*) from sessions where label_mismatch)            as label_mismatch
         """)

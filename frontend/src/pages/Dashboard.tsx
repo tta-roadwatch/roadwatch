@@ -110,7 +110,7 @@ export function Dashboard() {
           <Stat label="주행 세션" value={num(dash.stats.sessions)} unit="개" />
           <Stat label="취약구간 후보" value={num(dash.stats.candidates)} unit="곳" />
           <Stat
-            label="점검 대기"
+            label="진행 중 점검"
             value={num(dash.stats.pending_inspections)}
             unit="건"
           />
