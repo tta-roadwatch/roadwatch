@@ -3,7 +3,11 @@ import { Link, useParams } from "react-router-dom";
 
 import { api } from "../api/client";
 import { useApi } from "../api/useApi";
-import type { CellDetail as CellDetailData, Report } from "../api/types";
+import type {
+  CellDetail as CellDetailData,
+  CellReports,
+  Report,
+} from "../api/types";
 import { Alert } from "../components/Alert";
 import { ClassBadge, StatusBadge } from "../components/Badge";
 import { Card } from "../components/Card";
@@ -13,7 +17,7 @@ import { Empty, ErrorState, Loading } from "../components/States";
 import { classMeta } from "../lib/classification";
 import { FAMILY_ORDER, familyShort } from "../lib/family";
 import { tallyEventTypes } from "../lib/metrics";
-import { coord, num, pct } from "../lib/format";
+import { coord, day, num, pct } from "../lib/format";
 
 /** SCR-06 구간 상세.
  *
@@ -221,6 +225,7 @@ export function CellDetail() {
               확정됩니다.
             </p>
           </Card>
+          <CitizenReportsCard cellKey={cell.cell_key} />
         </div>
 
         <div className="rw-stack">
@@ -350,6 +355,61 @@ function EntityCard({ cellKey }: { cellKey: string }) {
         <pre className="rw-code" style={{ maxHeight: 320 }}>
           {JSON.stringify(data, null, 2)}
         </pre>
+      )}
+    </Card>
+  );
+}
+
+/** 이 구간에 들어온 시민 제보.
+ *
+ * 자율주행 데이터는 «어려웠다»는 신호만 남기고 왜 어려웠는지는 말하지
+ * 않는다. 공사로 차선이 바뀐 첫날이나 표지판을 가린 가로수 같은 것은
+ * 사람만 안다. 그래서 반복 이상 옆에 나란히 둔다.
+ *
+ * 판정 근거가 아니라는 점을 카드 안에 밝힌다. 제보가 많다고 취약구간이
+ * 되지 않고, 없다고 후보에서 빠지지도 않는다 — 현장에 나갈 순서를 정할
+ * 때 보는 자료다.
+ */
+function CitizenReportsCard({ cellKey }: { cellKey: string }) {
+  const { data, loading, error } = useApi<CellReports>(
+    () => api.cellReports(cellKey),
+    [cellKey],
+  );
+
+  if (loading || error || !data) return null;
+
+  return (
+    <Card
+      title="시민 제보"
+      aside={<span className="rw-meta">최근 {num(data.total)}건</span>}
+      footer={data.notice}
+    >
+      {data.total === 0 ? (
+        <p className="rw-note">이 구간에 접수된 제보가 없습니다.</p>
+      ) : (
+        <>
+          <ul className="rw-tally">
+            {data.by_category.map((c) => (
+              <li key={c.category}>
+                <span className="rw-tally__label">{c.category}</span>
+                <span className="rw-tally__count">{num(c.count)}건</span>
+              </li>
+            ))}
+          </ul>
+          {data.reports.some((r) => r.note) && (
+            <ul className="rw-quotes">
+              {data.reports
+                .filter((r) => r.note)
+                .slice(0, 3)
+                .map((r) => (
+                  <li key={r.id}>
+                    <q>{r.note}</q>
+                    <span className="rw-meta">{day(r.created_at)}</span>
+                  </li>
+                ))}
+            </ul>
+          )}
+        </>
       )}
     </Card>
   );

@@ -198,7 +198,7 @@ function SideCard({ label, side }: { label: string; side: ComparisonSide }) {
       <div className="rw-rate">
         <div className="rw-rate__head">
           <span className="rw-badge rw-badge--measured">실측값</span>
-          <span className="rw-note">{side.session_count}개 주행</span>
+          <span className="rw-meta">{side.session_count}개 주행</span>
         </div>
         <div className="rw-rate__value rw-rate__value--primary">
           {pct(side.event_rate)}

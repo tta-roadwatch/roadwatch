@@ -699,6 +699,13 @@
   color: var(--rw-text-secondary);
 }
 
+/* 인라인 보조 텍스트. rw-note 는 회색 상자를 가진 «안내 블록»이라
+   날짜나 건수 같은 곁글에 쓰면 상자가 생겨 본문보다 커 보인다. */
+.rw-meta {
+  font-size: var(--rw-size-aux);
+  color: var(--rw-text-secondary);
+}
+
 .rw-note--sim {
   background: var(--rw-sim-weak);
   border: 1px solid var(--rw-sim-border);
@@ -1025,4 +1032,157 @@ a.rw-login__brand:focus-visible {
   list-style: none;
   display: grid;
   gap: 4px;
+}
+
+/* ── 업무 흐름 (대시보드 업무함) ──────────────────────────────
+   상태별 건수를 흐름 순서대로 늘어놓는다. 단계 구분은 색이 아니라
+   순번과 글자가 한다 — 다섯 단계를 색으로만 나누면 색을 구분하기
+   어려운 사용자가 순서를 읽을 수 없다. */
+
+.rw-flow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--rw-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rw-flow__step {
+  position: relative;
+}
+
+/* 단계 사이 화살표. 마지막 칸에는 붙이지 않는다. */
+.rw-flow__step + .rw-flow__step::before {
+  content: "→";
+  position: absolute;
+  left: calc(var(--rw-space-3) * -1);
+  top: 50%;
+  transform: translate(-25%, -50%);
+  color: var(--rw-border-strong);
+  font-size: var(--rw-size-aux);
+}
+
+.rw-flow__order {
+  position: absolute;
+  top: var(--rw-space-3);
+  right: var(--rw-space-3);
+  font-size: var(--rw-size-caption);
+  color: var(--rw-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.rw-flow__link {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rw-space-2);
+  padding: var(--rw-space-5) var(--rw-space-4);
+  border: 1px solid var(--rw-border);
+  border-radius: var(--rw-radius-lg);
+  background: var(--rw-surface);
+  color: inherit;
+  text-decoration: none;
+}
+
+.rw-flow__link:hover {
+  border-color: var(--rw-primary);
+}
+
+.rw-flow__label {
+  font-size: var(--rw-size-aux);
+  color: var(--rw-text-secondary);
+}
+
+.rw-flow__count {
+  font-size: var(--rw-size-section-title);
+  font-weight: var(--rw-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 오늘 처리할 건 목록 ─────────────────────────────────── */
+
+.rw-worklist {
+  margin-top: var(--rw-space-6);
+  padding-top: var(--rw-space-6);
+  border-top: 1px solid var(--rw-border);
+}
+
+.rw-worklist__title {
+  margin: 0 0 var(--rw-space-3);
+  font-size: var(--rw-size-aux);
+  font-weight: var(--rw-weight-bold);
+}
+
+.rw-worklist__items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--rw-space-3);
+}
+
+.rw-worklist__items li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--rw-space-2) var(--rw-space-4);
+}
+
+/* ── 항목별 건수 (시민 제보 집계) ────────────────────────────
+   «차선 마모 3건» 처럼 무엇이 몇 건인지만 보인다. 막대나 색을 쓰지
+   않는 것은 이 값이 판정 근거가 아니어서다 — 시각적으로 강조하면
+   관측 데이터와 같은 무게로 읽힌다. */
+
+.rw-tally {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--rw-space-3);
+}
+
+.rw-tally li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--rw-space-4);
+  font-size: var(--rw-size-aux);
+}
+
+.rw-tally__label {
+  color: var(--rw-text-secondary);
+}
+
+.rw-tally__count {
+  font-weight: var(--rw-weight-bold);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ── 제보 원문 ──────────────────────────────────────────────
+   시민이 쓴 말을 그대로 옮긴다. 요약하면 «차선 마모» 같은 분류로
+   뭉개져 현장 사정이 사라진다. */
+
+.rw-quotes {
+  margin: var(--rw-space-6) 0 0;
+  padding: var(--rw-space-5) 0 0;
+  border-top: 1px solid var(--rw-border);
+  list-style: none;
+  display: grid;
+  gap: var(--rw-space-4);
+}
+
+.rw-quotes li {
+  display: grid;
+  gap: var(--rw-space-1);
+  font-size: var(--rw-size-aux);
+}
+
+.rw-quotes q {
+  color: var(--rw-text);
+  quotes: "“" "”";
+}
+
+.rw-quotes .rw-meta {
+  font-size: var(--rw-size-caption);
 }

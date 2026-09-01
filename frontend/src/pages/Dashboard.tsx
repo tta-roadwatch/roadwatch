@@ -2,19 +2,25 @@ import { Link, useNavigate } from "react-router-dom";
 
 import { api } from "../api/client";
 import { useApi } from "../api/useApi";
-import type { Cell, CellDetail, Dashboard as DashboardData } from "../api/types";
+import type {
+  Cell,
+  CellDetail,
+  Dashboard as DashboardData,
+  Workbox as WorkboxData,
+} from "../api/types";
 import { Alert } from "../components/Alert";
 import { ClassBadge } from "../components/Badge";
 import { Card } from "../components/Card";
 import { PageHeader } from "../components/PageHeader";
 import { ErrorState, Loading } from "../components/States";
 import { FAMILY_ORDER, familyShort } from "../lib/family";
-import { coord, num, pct } from "../lib/format";
+import { coord, day, num, pct } from "../lib/format";
 
 interface DashboardBundle {
   dash: DashboardData;
   byKey: Map<string, Cell>;
   details: Map<string, CellDetail>;
+  workbox: WorkboxData | null;
 }
 
 /** SCR-01 대시보드.
@@ -34,17 +40,19 @@ export function Dashboard() {
     const dash = await api.dashboard();
 
     // 좌표와 갈래별 이벤트율은 부가 정보다. 실패해도 표는 그려져야 한다.
-    const [cells, details] = await Promise.all([
+    const [cells, details, workbox] = await Promise.all([
       api.cells(true).catch(() => [] as Cell[]),
       Promise.all(
         dash.top_candidates.map((c) =>
           api.cell(c.cell_key).catch(() => null),
         ),
       ),
+      api.workbox().catch(() => null),
     ]);
 
     return {
       dash,
+      workbox,
       byKey: new Map(cells.map((c) => [c.cell_key, c])),
       details: new Map(
         details.filter((d): d is CellDetail => d !== null).map((d) => [
@@ -63,6 +71,7 @@ export function Dashboard() {
   }
 
   const { dash, byKey, details } = data;
+  const wb = data.workbox;
 
   return (
     <div className="rw-stack">
@@ -107,6 +116,8 @@ export function Dashboard() {
           />
         </div>
       </div>
+
+      {wb && <Workbox wb={wb} />}
 
       <Card
         title="점검이 필요한 구간"
@@ -227,5 +238,72 @@ function Stat({
         <span className="rw-stat__unit">{unit}</span>
       </p>
     </div>
+  );
+}
+
+/** 점검·조치 업무함.
+ *
+ * 총계만 보여주면 어제와 오늘이 같아 보인다. 관리자에게 필요한 것은
+ * «지금 내 손에 뭐가 걸려 있나»다. 그래서 업무 흐름 순서대로 세고,
+ * 기한이 지난 건을 맨 위에 따로 올린다.
+ *
+ * 단계 구분은 색이 아니라 글자가 한다. 다섯 단계를 색으로만 나누면
+ * 색을 구분하기 어려운 사용자가 순서를 읽을 수 없다.
+ */
+function Workbox({ wb }: { wb: WorkboxData }) {
+  return (
+    <Card
+      title="점검·조치 업무함"
+      aside={<Link to="/inspections">점검 관리로</Link>}
+      footer={wb.notice}
+    >
+      <ol className="rw-flow">
+        {wb.stages.map((st, i) => (
+          <li key={st.status} className="rw-flow__step">
+            <span className="rw-flow__order" aria-hidden="true">
+              {i + 1}
+            </span>
+            <Link
+              className="rw-flow__link"
+              to={`/inspections?status=${st.status}`}
+            >
+              <span className="rw-flow__label">{st.label}</span>
+              <span className="rw-flow__count">
+                {num(st.count)}
+                <span className="rw-stat__unit">건</span>
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ol>
+
+      {wb.overdue.length > 0 && (
+        <div className="rw-worklist">
+          <h3 className="rw-worklist__title">
+            예정일이 지난 건 {wb.overdue.length}
+          </h3>
+          <ul className="rw-worklist__items">
+            {wb.overdue.slice(0, 5).map((i) => (
+              <li key={i.id}>
+                <Link to={`/cells/${encodeURIComponent(i.cell_key ?? "")}`}>
+                  {i.road_name ?? i.cell_key}
+                </Link>
+                <span className="rw-meta">
+                  {day(i.scheduled_for)} 예정 · {i.status_label}
+                  {i.assignee ? ` · ${i.assignee}` : ""}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {wb.overdue.length === 0 && wb.today.length === 0 && (
+        <p className="rw-note">
+          예정일이 지났거나 오늘 예정된 점검이 없습니다. 위 단계에서 처리할
+          건을 고르세요.
+        </p>
+      )}
+    </Card>
   );
 }

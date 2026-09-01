@@ -251,8 +251,17 @@ def test_comparison_without_action_offers_no_before_after(client):
     예전에는 조치 후 값을 시뮬레이션으로 채웠다. 지금은 기준선이 없으면
     비교 자체를 만들지 않는다 — 없는 값을 지어내는 대신 무엇이 필요한지
     알린다.
+
+    no_action 은 «점검 기록이 없다»가 아니라 «완료된 조치가 없다»는 뜻이다.
+    후보 격자에는 모두 recommended 기록이 깔려 있으므로, 조치까지 끝난
+    곳만 빼고 고른다. 격자를 고정하면 시연용 데이터 하나에 깨진다.
     """
-    c = client.get("/api/cells/21:4/comparison").json()
+    cells = client.get("/api/cells", params={"candidates_only": True}).json()
+    target = next((c["cell_key"] for c in cells
+                   if c.get("inspection_status") != "resolved"), None)
+    assert target, "조치가 끝나지 않은 후보 격자가 하나는 있어야 한다"
+
+    c = client.get(f"/api/cells/{target}/comparison").json()
     assert c["state"] == "no_action"
     assert c["before"] is None and c["after"] is None
     assert "조치 완료" in c["notice"]
