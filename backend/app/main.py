@@ -12,6 +12,7 @@
 """
 from __future__ import annotations
 
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Request
@@ -51,10 +52,28 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# 화면(5173)이 다른 오리진이라 필요하다. 공개 데이터 조회 API 라 제한하지 않는다.
+# 화면(5173)이 다른 오리진이라 CORS 가 필요하다.
+#
+# 기본값은 로컬 개발 주소만 연다. 예전에는 "*" 로 전부 열어 두었는데,
+# 공개 데이터라도 브라우저가 아무 사이트에서나 이 API 를 부를 수 있게 둘
+# 이유는 없다.
+#
+# 다만 심사자가 다른 포트나 호스트로 띄울 수 있으므로, CORS_ORIGINS 를
+# "*" 로 두면 예전처럼 전부 연다. 재현이 막히는 것보다 낫고, 그 상태는
+# /api/auth/config 가 숨기지 않고 알린다.
+CORS_ORIGINS = [
+    o.strip()
+    for o in os.environ.get(
+        "CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173"
+    ).split(",")
+    if o.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], allow_methods=["*"], allow_headers=["*"],
+    allow_origins=CORS_ORIGINS,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 for r in (entities.router, datasets.router, screens.router,

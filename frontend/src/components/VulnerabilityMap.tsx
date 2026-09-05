@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import maplibregl from "maplibre-gl";
+// maplibre-gl 6 부터 기본 export 가 없다. 네임스페이스로 받아
+// maplibregl.Map 처럼 쓰던 코드를 그대로 둔다.
+import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 import type {

@@ -43,6 +43,10 @@ def demo_login():
     인증을 건너뛰는 게 아니라 데모 계정으로 정상 발급받는다. 발급된 토큰의
     권한도 일반 사용자(inspector)와 같다.
     """
+    # main 을 여기서 부른다. 최상단에서 부르면 main → routers → auth →
+    # main 으로 순환 참조가 된다.
+    from .. import main
+
     seed = next(u for u in auth.SEED_USERS if u["is_demo"])
     user = auth.find_user(seed["username"])
     if user is None:
@@ -63,6 +67,10 @@ def config():
 
     운영 배포에서는 데모 계정을 지우면 버튼이 자동으로 사라진다.
     """
+    # main 을 여기서 부른다. 최상단에서 부르면
+    # main → routers → auth → main 으로 순환 참조가 된다.
+    from .. import main
+
     seed = next(u for u in auth.SEED_USERS if u["is_demo"])
     demo = auth.find_user(seed["username"])
     return {
@@ -70,6 +78,11 @@ def config():
         "demo_username": seed["username"] if demo else None,
         # 개발 기본 비밀키를 그대로 쓰는지 화면·심사자에게 숨기지 않는다
         "dev_secret_in_use": auth.using_dev_secret(),
+        # CORS 를 전부 열어 둔 상태도 숨기지 않는다. 재현을 위해 열 수는
+        # 있어도, 열려 있다는 사실은 보여야 한다.
+        "cors_open_to_all": "*" in main.CORS_ORIGINS,
+        "cors_origins": main.CORS_ORIGINS,
         "notice": ("조회 API 는 인증 없이 열려 있습니다. 공개 데이터이기 때문입니다. "
-                   "현장점검 등록만 로그인이 필요합니다."),
+                   "행정 기록을 남기는 쓰기(현장점검 등록)만 로그인이 필요합니다. "
+                   "시민 제보는 판정을 바꾸지 않으므로 인증 없이 접수합니다."),
     }
